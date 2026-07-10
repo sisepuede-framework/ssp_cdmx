@@ -1,0 +1,14 @@
+sector,run_id,total_gross_Mt,total_net_Mt,delta_vs_previous_Mt,transport_share_pct,date,notes
+socioeconomic,cdmx_socio,442.9,442.95,,10.8,2026-07-03,"gnrl drivers only: pop->9.24M, gdp->15%, occ->3.34, area->149430ha"
+energy-supply,cdmx_energy,345.53,345.58,-97.37,13.8,2026-07-04,elec imports 0.999; caps gas0.417+solar0.161; exports=0; fuel imports~1
+transport,cdmx_transport,315.92,315.98,-29.61,5.7,2026-07-06,pkm/cap 15139; freight 26496 Mtkm; occ public 25; Metro electric; motos->road_light
+transport-refined,cdmx_transport2,315.47,315.52,-0.45,5.6,2026-07-06,"fracs refined: RL .6938, avi .2196"
+buildings-industry,cdmx_buildings,305.94,305.99,-9.53,5.8,2026-07-06,scoe intensities+fuelmix CDMX; inen GDP/agri part; production part pending ippu
+waste,cdmx_waste,296.44,296.5,-9.5,6.0,2026-07-06,qty in-territory 0.087; treated 17.9%; landfill capture 0.20
+ippu,cdmx_ippu,121.86,121.75,-174.58,14.5,2026-07-06,prodinit->0; product-use scalar 0.01
+afolu,cdmx_afolu,43.33,43.22,-78.53,40.8,2026-07-06,CDMX herds + cropland 19233 ha
+afolu-refined,cdmx_afolu2,27.18,27.07,-16.15,65.0,2026-07-06,full chain re-applied; fertilizer scaled 4.5e-4
+FINAL,cdmx_final,26.1,25.99,-1.08,67.7,2026-07-06,all 7 sectors + refinements
+FINAL2,cdmx_final2,24.47,24.36,-1.63,72.2,2026-07-06,industrial WW aerobic + N territorial + inen 150
+FINAL3,cdmx_final3,23.99,23.88,-0.48,73.7,2026-07-06,protein-N territorial; all sectors
+FINAL4,cdmx_final4,23.7,23.59,-0.29,74.6,2026-07-06,COD territorial; FINAL

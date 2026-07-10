@@ -1,0 +1,43 @@
+indicator,subsector,value,unit,year,cdmx_share_of_national,source_name,source_url,found
+ghg_total_scope1,validation,23.465,Mt CO2e,2022,,SEDEMA Inventario Emisiones CDMX 2022 (Table 3 p.30),http://www.aire.cdmx.gob.mx/descargas/publicaciones/inventario-de-emisiones/inventario-emisiones-2022/inventario-emisiones-cdmx-2022.pdf,yes
+ghg_transport,validation,17.802,Mt CO2e,2022,,SEDEMA Inventario Emisiones CDMX 2022 (Table 27),http://www.aire.cdmx.gob.mx/descargas/publicaciones/inventario-de-emisiones/inventario-emisiones-2022/inventario-emisiones-cdmx-2022.pdf,yes
+ghg_transport_onroad,validation,16.989,Mt CO2e,2022,,SEDEMA Inventario Emisiones CDMX 2022,http://www.aire.cdmx.gob.mx/descargas/publicaciones/inventario-de-emisiones/inventario-emisiones-2022/inventario-emisiones-cdmx-2022.pdf,yes
+ghg_energy_stationary,validation,5.237,Mt CO2e,2022,,SEDEMA Inventario Emisiones CDMX 2022 (Table 27),http://www.aire.cdmx.gob.mx/descargas/publicaciones/inventario-de-emisiones/inventario-emisiones-2022/inventario-emisiones-cdmx-2022.pdf,yes
+ghg_waste,validation,0.361,Mt CO2e,2022,,SEDEMA Inventario Emisiones CDMX 2022,http://www.aire.cdmx.gob.mx/descargas/publicaciones/inventario-de-emisiones/inventario-emisiones-2022/inventario-emisiones-cdmx-2022.pdf,yes
+ghg_afolu,validation,0.067,Mt CO2e,2022,,SEDEMA Inventario Emisiones CDMX 2022 (source-only; no LULUCF sink),http://www.aire.cdmx.gob.mx/descargas/publicaciones/inventario-de-emisiones/inventario-emisiones-2022/inventario-emisiones-cdmx-2022.pdf,yes
+ghg_ippu,validation,0.002,Mt CO2e,2022,,SEDEMA Inventario Emisiones CDMX 2022 (no IPPU bucket; ~HFC only),http://www.aire.cdmx.gob.mx/descargas/publicaciones/inventario-de-emisiones/inventario-emisiones-2022/inventario-emisiones-cdmx-2022.pdf,partial
+ghg_electricity_ingen,validation,0.106,Mt CO2e,2022,,SEDEMA Inventario Emisiones CDMX 2022 (in-city generation only),http://www.aire.cdmx.gob.mx/descargas/publicaciones/inventario-de-emisiones/inventario-emisiones-2022/inventario-emisiones-cdmx-2022.pdf,yes
+population_total,gnrl,9209944,persons,2020,0.0731,INEGI Censo 2020,https://www.inegi.org.mx/contenidos/saladeprensa/boletines/2021/EstSociodemo/ResultCenso2020_CdMx.pdf,yes
+population_proj_2030,gnrl,9032705,persons,2030,0.0654,CONAPO Proyecciones pry23,https://conapo.segob.gob.mx/work/models/CONAPO/Datos_Abiertos/pry23/00_Pob_Mitad_1950_2070.csv,yes
+population_proj_2050,gnrl,8015397,persons,2050,0.0546,CONAPO Proyecciones pry23,https://conapo.segob.gob.mx/work/models/CONAPO/Datos_Abiertos/pry23/00_Pob_Mitad_1950_2070.csv,yes
+gdp_share_of_national,gnrl,0.150,fraction,2024,0.150,INEGI PIBE 2024,https://www.inegi.org.mx/contenidos/saladeprensa/boletines/2025/pibent/PIBE2024_CP.pdf,yes
+value_added_secondary_frac,gnrl,0.099,fraction of CDMX GDP,2023,,INEGI PIBE 2023 CDMX,https://www.inegi.org.mx/contenidos/saladeprensa/boletines/2024/PIBEF/PIBEF2023_CDMX.pdf,yes
+value_added_services_frac,gnrl,0.835,fraction of CDMX GDP,2023,,INEGI PIBE 2023 CDMX,https://www.inegi.org.mx/contenidos/saladeprensa/boletines/2024/PIBEF/PIBEF2023_CDMX.pdf,yes
+value_added_manufacturing_frac,ippu,,fraction of CDMX GDP,2023,,INEGI PIBE SCIAN 31-33 (needs tabulado pull),https://www.inegi.org.mx/programas/pibent/2018/,no
+households,gnrl,2756319,dwellings,2020,0.0783,INEGI Censo 2020,https://www.inegi.org.mx/contenidos/saladeprensa/boletines/2021/EstSociodemo/ResultCenso2020_CdMx.pdf,yes
+electricity_consumption,scoe,11877,GWh,2022,0.034,SENER SIE / CFE (secondary compilation; verify on SIE portal),https://www.datos.gob.mx/busca/dataset/volumen-de-ventas-por-tipo-de-petroliferos-y-por-entidad-federativa,partial
+grid_emission_factor,entc,0.444,tCO2e/MWh,2024,,CRE/SEMARNAT Aviso FE-SEN 2024,https://www.gob.mx/cms/uploads/attachment/file/981194/aviso_fesen_2024.pdf,yes
+grid_emission_factor_2022,entc,0.435,tCO2e/MWh,2022,,CRE/SEMARNAT Aviso FE-SEN 2022,https://www.gob.mx/cms/uploads/attachment/file/807500/aviso_fesen_2022.pdf,yes
+electricity_ingen_capacity,entc,417.4,MW,2023,,PAN-CDMX/CFE-CRE permits (via Global Energy),https://globalenergy.mx/noticias-especiales/energia-y-zonas-industriales-en-la-ciudad-de-mexico/,yes
+fuel_gasoline,enfu,2713228013,L,2024,0.0615,CNE Petroliferos ventas expendio,https://www.datos.gob.mx/dataset/volumenes_venta_expendio_publico_petroliferos,yes
+fuel_diesel_retail,enfu,291573054,L,2024,0.0223,CNE Petroliferos ventas expendio,https://www.datos.gob.mx/dataset/volumenes_venta_expendio_publico_petroliferos,yes
+fuel_lp_cylinder,enfu,106060876,kg,2024,0.0878,CNE Gas LP cilindro,https://www.datos.gob.mx/dataset/petroliferos,yes
+vehicle_fleet_total,trns,6509434,vehicles,2024,0.1062,INEGI VMRC 2024,https://www.inegi.org.mx/temas/vehiculos/,yes
+vehicle_fleet_motorcycles,trns,716400,vehicles,2024,,INEGI VMRC 2024,https://www.inegi.org.mx/temas/vehiculos/,yes
+modal_split_public_transport,trns,0.451,fraction of trips,2017,,INEGI EOD 2017 (ZMVM),https://www.gob.mx/cms/uploads/attachment/file/323491/Resultados_EOD.pdf,yes
+modal_split_private,trns,0.211,fraction of trips,2017,,INEGI EOD 2017 (ZMVM),https://www.gob.mx/cms/uploads/attachment/file/323491/Resultados_EOD.pdf,yes
+modal_split_walk,trns,0.323,fraction of trips,2017,,INEGI EOD 2017 (ZMVM),https://www.gob.mx/cms/uploads/attachment/file/323491/Resultados_EOD.pdf,yes
+metro_ridership,trns,1057461875,passengers,2022,,Metro CDMX Cifras de Operacion,https://www.metro.cdmx.gob.mx/operacion/cifras-de-operacion,yes
+metrobus_ridership,trns,438131175,passengers,2022,,Datos Abiertos CDMX Metrobus,https://datos.cdmx.gob.mx/dataset/afluencia-diaria-de-metrobus-cdmx,yes
+waste_generation,waso,4545710,tonnes/year,2023,,SEDEMA Inventario Residuos Solidos 2023 (12454 t/day),https://www.sedema.cdmx.gob.mx/storage/app/media/DGCPCA/residuos/IRS_2023_Completo.pdf,yes
+waste_frac_landfill,waso,0.777,fraction,2023,,SEDEMA IRS 2023 (exported to Edomex; no own landfill),https://www.sedema.cdmx.gob.mx/storage/app/media/DGCPCA/residuos/IRS_2023_Completo.pdf,yes
+waste_frac_organic,waso,0.43,fraction,2023,,SEDEMA IRS 2023,https://www.sedema.cdmx.gob.mx/storage/app/media/DGCPCA/residuos/IRS_2023_Completo.pdf,yes
+wastewater_treated,trww,88700000,m3/year,2017,,INEGI/SACMEX (25 PTAR),https://www.inegi.org.mx/app/cuadroentidad/CDMX/2018/02/2_11,yes
+wastewater_treated_frac,trww,0.179,fraction,2022,,SACMEX/IPDP,https://www.inegi.org.mx/app/cuadroentidad/CDMX/2018/02/2_11,yes
+suelo_conservacion_area,lndu,87296.8,ha,2011,,SEDEMA/CORENA,http://data.sedema.cdmx.gob.mx/sedema/images/archivos/noticias/primer-informe-sedema/capitulo-03.pdf,yes
+forest_area,frst,26047,ha,2011,,SEDEMA (bosques Valle de Mexico),http://data.sedema.cdmx.gob.mx/sedema/images/archivos/noticias/primer-informe-sedema/capitulo-03.pdf,yes
+agriculture_area,agrc,19233,ha,2022,,INEGI Censo Agropecuario 2022,https://www.inegi.org.mx/contenidos/saladeprensa/boletines/2023/CA_Def/CA_Def2022_CDMX.pdf,yes
+livestock_poultry,lvst,50631,head,2022,,INEGI Censo Agropecuario 2022,https://www.inegi.org.mx/contenidos/saladeprensa/boletines/2023/CA_Def/CA_Def2022_CDMX.pdf,yes
+livestock_sheep,lvst,32839,head,2022,,INEGI Censo Agropecuario 2022,https://www.inegi.org.mx/contenidos/saladeprensa/boletines/2023/CA_Def/CA_Def2022_CDMX.pdf,yes
+livestock_pigs,lvst,14003,head,2022,,INEGI Censo Agropecuario 2022,https://www.inegi.org.mx/contenidos/saladeprensa/boletines/2023/CA_Def/CA_Def2022_CDMX.pdf,yes
+livestock_cattle,lvst,6487,head,2022,,INEGI Censo Agropecuario 2022,https://www.inegi.org.mx/contenidos/saladeprensa/boletines/2023/CA_Def/CA_Def2022_CDMX.pdf,yes

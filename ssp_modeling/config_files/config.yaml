@@ -1,0 +1,8 @@
+# country_name = etiqueta de REGION de SISEPUEDE. DEBE ser "mexico": es la unica
+# region que el modelo reconoce (attribute_region no incluye "cdmx"). Los datos
+# estan calibrados a CDMX; el postprocesamiento reetiqueta la salida a "cdmx".
+country_name: "mexico"
+ssp_input_file_name: "sisepuede_adj_inputs_CDMX.csv"
+ssp_transformation_cw: "ssp_cdmx_transformation_strategy.xlsx"
+set_lndu_reallocation_factor_to_zero: true
+energy_model_flag: true
