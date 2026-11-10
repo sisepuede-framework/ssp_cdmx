@@ -3,7 +3,51 @@
 Author: Orchestrator (direct; two subagent attempts died on the 14 MB SEDEMA PDF —
 data was instead extracted locally with pdftotext). Retrieval date: 2026-07-06.
 
-## Official anchors — SEDEMA Inventario de Emisiones CDMXyZC 2022 (CDMX-only, t CO2e)
+## REVISION 2026-11-10 — re-mapping to official SISEPUEDE categories (supersedes table below)
+
+The original mapping (below, kept for history) put motorcycles in `road_light`,
+light trucks in `road_heavy_freight`, and lumped locomotives + bus terminals +
+nothing for machinery. Re-mapped to the `$CAT-TRANSPORTATION$` definitions
+(powered_bikes = "two and three-wheel motorcycles"; road_light = "cars and light
+duty trucks"; road_heavy_regional = "regional heavy transit, primarily busses"):
+
+| SEDEMA 2022 (Tabla 27, CDMX) | t CO2e | SISEPUEDE | Model 2022 (Mt) |
+|---|---:|---|---:|
+| Autos 4,530,064 + SUV 2,180,141 + Taxis 3,336,138 + Vagonetas 451,940 + Carga ≤3.8t 86,521 | 10,584,804 | road_light | 10.583 |
+| Motocicletas | 3,467,819 | powered_bikes | 3.468 |
+| Micro/midibuses 1,029,875 + Autobuses 954,113 + Metrobús/Mexibús 40,591 | 2,024,579 | public | 2.025 |
+| Tractocamiones 310,987 + Carga >3.8t 601,090 | 912,077 | road_heavy_freight | 0.912 |
+| Operación de aeronaves | 417,812 | aviation | 0.418 |
+| Terminales de autobuses de pasajeros | 18,170 | road_heavy_regional | 0.018 |
+| Locomotoras (foráneas/patio) | 6,931 | rail_freight | 0.007 |
+| — (Metro/TL/Suburbano electric) | 0 | rail_passenger, human_powered, water_borne | 0 |
+| **trns total** | **17,432,192** | | **17.431** |
+| Maquinaria (construction off-road) | 369,813 | **inen** (IPCC 1.A.2.g) | folded into OPM intensity |
+
+### Motorcycles — official activity + MOVES-implied efficiency (decision: user, 2026-11-10)
+- Fleet: **589,797** motos registered in CDMX (SEDEMA 2022 Anexo Tabla 3, p.93).
+- Activity: **24,727 km/yr per moto** (CAMe, *Inventario de emisiones de fuentes
+  móviles carreteras para la Megalópolis 2020*, Tabla 5.5 / 6.3; telemetry Dat's
+  Why/TomTom; 2018 distances kept for motos due to delivery activity).
+  → 14.58e9 pkm (occ 1) ≈ 1,579 pkm/cap.
+- Nominal efficiency: **25.0 km/L** (CAMe 2020 Tabla 6.4, from CONUEE 2020).
+- **Inconsistency:** fleet × km ÷ 25 km/L ≈ 583 ML ≈ **1.3 Mt**, but SEDEMA reports
+  **3.468 Mt** (×2.6). Same ratio for all CDMXyZC (≈2.9 Mt fuel-based vs 8.79 Mt
+  SEDEMA), so it is not territorial through-traffic; it comes from the
+  MOVES-México 2023 "ajuste de factores de motocicletas" (SEDEMA p.145).
+- Calibration: activity kept at official value; **`fuelefficiency_trns_powered_bikes_gasoline_km_per_litre`
+  = 9.84** (MOVES-implied effective) so emissions replicate the benchmark.
+  Caveat: moto electrification/efficiency transformers will overstate savings
+  relative to a 25 km/L physical fleet.
+- CAMe report: https://www.gob.mx/cms/uploads/attachment/file/943862/17b_Informe_Inventario_de_emisiones_fuentes_moviles_carreteras_2020.pdf
+
+New parameters (inverse-calibrated from the 2022 run, linear in deminit·frac/eff):
+urban deminit 15,139 → **13,781.1** pkm/cap, fracs road_light .5753 / public .2568 /
+powered_bikes .1092 / human .0587; regional aviation .2197 / road_heavy_regional
+.0507 / road_light .1344 / rail_passenger .5952; freight deminit → **22,563.1** Mtkm,
+road .9714 / rail .0286.
+
+## Official anchors — SEDEMA Inventario de Emisiones CDMXyZC 2022 (CDMX-only, t CO2e) [ORIGINAL 2026-07-06]
 Source: http://www.aire.cdmx.gob.mx/descargas/publicaciones/inventario-de-emisiones/inventario-emisiones-2022/inventario-emisiones-cdmx-2022.pdf
 (Table 27 pp.134-135 / Table 36 p.152; fleet Table 5 p.39; extracted via pdftotext.)
 

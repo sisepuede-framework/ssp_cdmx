@@ -21,7 +21,7 @@ Usage from a manager notebook:
     )
 
 Outputs land in `<project_dir>/ssp_modeling/tableau/data/`:
-  - decomposed_emissions_<region>_<year_ref>.csv   (HP-smoothed, historical + SISEPUEDE)
+  - emissions_<region>_<year_ref>.csv              (raw SSP values, historical + SISEPUEDE)
   - drivers_<region>.csv                            (driver variables + GDP history)
   - tableau_levers_table_complete.csv               (levers + stakeholder merge)
   - jobs_demand_<region>.csv                        (employment subset)
@@ -31,95 +31,9 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Iterable
 
 import numpy as np
 import pandas as pd
-from statsmodels.tsa.filters.hp_filter import hpfilter
-
-
-# ---------------------------------------------------------------------------
-# HP filter (port of R hp_filter_subsec)
-# ---------------------------------------------------------------------------
-
-def _hp_smooth_series(values: np.ndarray, lambda_hp: float) -> np.ndarray:
-    """Anchored, non-negative HP trend matching the R hp_filter_subsec output."""
-    if len(values) < 2:
-        return values.copy()
-    _, trend = hpfilter(values.astype(float), lamb=lambda_hp)
-    sm = np.maximum(trend, 0.0)
-    sm = np.maximum(sm + (values[0] - sm[0]), 0.0)
-    sm[0] = values[0]
-    return sm
-
-
-def _apply_hp_to_subsec_gas(
-    df: pd.DataFrame,
-    subsec: str,
-    gases,
-    lambda_hp: float,
-    by_cols=("primary_id", "strategy_id", "design_id", "future_id", "Code"),
-    time_col: str = "Year",
-    value_col: str = "value",
-    cutoff_year: int | None = 2025,
-) -> pd.DataFrame:
-    """Apply HP smoothing per group for matching (subsector, gas) rows.
-
-    If `cutoff_year` is set, the HP filter is applied only to years
-    >= cutoff_year, anchored at cutoff_year so the smoothed series starts
-    exactly at the original value of that year (preserving continuity).
-    """
-    if isinstance(gases, str):
-        gases = [gases]
-    df["value_original"] = df["value"].astype(float)
-    mask = (
-        (df["subsector"] == subsec)
-        & (df["Gas"].isin(gases))
-        & df["strategy_id"].notna()
-    )
-    if not mask.any():
-        return df
-
-    sub = df.loc[mask]
-    smoothed = pd.Series(np.nan, index=sub.index, dtype=float, name="value_hp")
-    for _, idx in sub.groupby(list(by_cols), dropna=False).indices.items():
-        ordered = sub.iloc[idx].sort_values(time_col)
-        if cutoff_year is not None:
-            window = ordered.loc[ordered[time_col] >= cutoff_year]
-            if len(window) < 2:
-                continue
-            v = window[value_col].astype(float).to_numpy()
-            sm = _hp_smooth_series(v, lambda_hp)
-            smoothed.loc[window.index] = sm
-        else:
-            v = ordered[value_col].astype(float).to_numpy()
-            sm = _hp_smooth_series(v, lambda_hp)
-            smoothed.loc[ordered.index] = sm
-
-    df.loc[smoothed.index, "value_hp"] = smoothed.values
-    valid = smoothed.notna()
-    if valid.any():
-        df.loc[smoothed.index[valid], value_col] = smoothed[valid].values
-    not_smoothed = smoothed.isna()
-    if not_smoothed.any():
-        df.loc[smoothed.index[not_smoothed], "value_hp"] = (
-            df.loc[smoothed.index[not_smoothed], value_col].astype(float).values
-        )
-    return df
-
-
-# HP smoothing schedule tuned for Morocco's IPCC subsector naming.
-# Format: (subsector_label, [gases], lambda_hp)
-HP_SCHEDULE = [
-
-    ("3.A.1 - Enteric Fermentation",                       ["CH4"], 200),
-    ("3.A.2 - Manure Management",                          ["CH4"], 200),
-    ("3.C.4 - Direct N2O Emissions from managed soils",    ["N2O"], 200),
-    
-    ("4.A.1 - Managed Waste Disposal Sites",               ["CH4"], 400),
-    ("4.A.2 - Unmanaged Waste Disposal Sites",             ["CH4"], 400),
-    ("4.D.1 - Domestic Wastewater",                        ["CH4"], 400),
-]
 
 
 # ---------------------------------------------------------------------------
@@ -134,20 +48,19 @@ def build_emissions_table(
     region: str,
     year_ref: int,
     out_path: Path,
-    hp_schedule: Iterable[tuple] = HP_SCHEDULE,
-    hp_cutoff_year: int | None = 2025,
 ) -> pd.DataFrame:
-    """Port of data_prep_new_mapping.r."""
+    """Port of data_prep_new_mapping.r.
+
+    Emissions are emitted exactly as SISEPUEDE produces them (no HP smoothing).
+    Output grain is (sector, subsector, subsector_category, Gas): ``subsector_category``
+    breaks each
+    subsector into the SSP emission variables that compose it, so summing all
+    categories within a subsector reproduces the subsector total.
+    """
 
     # 1 — load mapping
     mapping = pd.read_csv(targets_path)
     mapping = mapping.drop(columns=[c for c in ("id", "ids", iso_code3) if c in mapping.columns])
-    mapping = mapping.reset_index().rename(columns={"index": "_row"})
-    mapping["ids"] = (
-        mapping["_row"].astype(str)
-        + "_" + mapping["subsector_ssp"].astype(str)
-        + "_" + mapping["gas"].astype(str)
-    )
 
     # 2 — load historical inventory, filter to country (OPTIONAL)
     #     CDMX has no formatted historical inventory file; if absent, the model
@@ -165,44 +78,49 @@ def build_emissions_table(
     data = data[data["region"] == region].copy()
     data = data.sort_values(["primary_id", "time_period", "region"]).reset_index(drop=True)
 
-    # 4 — build mapped (rowSum) columns according to mapping$vars (colon-separated)
+    # 4 — explode mapping$vars (colon-separated) into one row per SSP emission
+    #     variable, carrying a `subsector_category` label = the variable name with its
+    #     `emission_co2e_<gas>_<subsector_ssp>_` prefix stripped.
     id_vars = ["region", "time_period", "primary_id"]
     data_cols = set(data.columns)
 
+    var_rows = []
     for _, row in mapping.iterrows():
-        vars_list = [v.strip() for v in str(row["vars"]).split(":") if v.strip()]
-        present = [v for v in vars_list if v in data_cols]
-        if len(present) > 1:
-            data[row["ids"]] = data[present].sum(axis=1)
-        elif len(present) == 1:
-            data[row["ids"]] = data[present[0]]
-        else:
-            data[row["ids"]] = 0.0
+        prefix = f"emission_co2e_{str(row['gas']).lower()}_{row['subsector_ssp']}_"
+        for v in str(row["vars"]).split(":"):
+            v = v.strip()
+            if not v or v not in data_cols:
+                continue
+            var_rows.append({
+                "variable":  v,
+                "ID":        row["ID"],
+                "sector":    row["sector"],
+                "subsector": row["subsector"],
+                "Gas":       row["gas"],
+                "subsector_category":  v[len(prefix):] if v.startswith(prefix) else v,
+            })
+    var_map = pd.DataFrame(var_rows)
+    present_vars = var_map["variable"].tolist()
 
-    data_new = data[id_vars + mapping["ids"].tolist()].copy()
-
-    # 5 — wide → long
-    data_new = data_new.melt(id_vars=id_vars, var_name="ids", value_name="value")
-
-    # 6 — merge with mapping; rename CSC sector/subsector
-    map_keep = mapping.drop(columns=["vars"]).rename(
-        columns={"sector": "CSC.Sector", "subsector": "CSC.Subsector"}
+    # 5 — wide → long over the individual emission variables
+    data_new = data[id_vars + present_vars].melt(
+        id_vars=id_vars, var_name="variable", value_name="value"
     )
-    data_new = data_new.merge(map_keep, on="ids", how="left")
 
-    # 7 — aggregate to inventory level
+    # 6 — merge variable → (sector, subsector, subsector_category, Gas, ID)
+    data_new = data_new.merge(var_map, on="variable", how="left")
+
+    # 7 — aggregate to (subsector, subsector_category, gas) grain
     data_new = (
         data_new.groupby(
-            ["primary_id", "time_period", "ID", "CSC.Sector", "CSC.Subsector"],
+            ["primary_id", "time_period", "ID", "sector", "subsector", "subsector_category", "Gas"],
             dropna=False,
             as_index=False,
         )["value"]
         .sum()
-        .rename(columns={"CSC.Sector": "sector", "CSC.Subsector": "subsector"})
     )
 
     data_new["Year"] = data_new["time_period"] + 2015
-    data_new["Gas"] = data_new["ID"].astype(str).str.split(":").str[1]
 
     # 8 — merge with primary + strategy attributes
     att_primary = pd.read_csv(run_dir / "ATTRIBUTE_PRIMARY.csv")
@@ -230,6 +148,7 @@ def build_emissions_table(
         edgar_long["Contry"]      = region
         edgar_long["strategy"]    = "Historical"
         edgar_long["source"]      = "NIR"
+        edgar_long["subsector_category"]    = np.nan   # historical inventory has no subsector_category split
     else:
         edgar_long = None
 
@@ -250,16 +169,14 @@ def build_emissions_table(
         ["strategy_id", "sector", "subsector", "Gas", "Year"], na_position="last"
     ).reset_index(drop=True)
 
-    # 11 — HP filter
-    combined["value_hp"] = np.nan
-    for subsec, gases, lam in hp_schedule:
-        combined = _apply_hp_to_subsec_gas(
-            combined, subsec, gases, lam, cutoff_year=hp_cutoff_year,
-        )
+    # 11 — no HP smoothing: emit raw SSP values. value_original / value_hp are
+    #      kept (the Tableau workbook binds them) as aliases of the raw value.
+    combined["value_original"] = combined["value"].astype(float)
+    combined["value_hp"]       = combined["value"].astype(float)
 
     # 12 — write CSV with the column order expected by Tableau
     final_cols = [
-        "strategy_id", "primary_id", "ID", "sector", "subsector", "value",
+        "strategy_id", "primary_id", "ID", "sector", "subsector", "subsector_category", "value",
         "Year", "Gas", "design_id", "future_id", "strategy", "Code",
         "Contry", "source", "value_original", "value_hp",
     ]
@@ -465,7 +382,6 @@ def run_tableau_postprocessing(
     year_ref: int,
     wide_inputs_outputs_filename: str | None = None,
     out_dir: str | Path | None = None,
-    hp_cutoff_year: int | None = 2025,
     drivers_taxonomy_filename: str = "driver_variables_taxonomy_20251013.csv",
     levers_filename: str | None = None,
 ) -> dict:
@@ -484,7 +400,6 @@ def run_tableau_postprocessing(
         file inside run_dir; if None, auto-detected.
     out_dir : where to write the Tableau CSVs (defaults to
         <project_dir>/ssp_modeling/tableau/data).
-    hp_cutoff_year : first year where HP smoothing kicks in (default 2025).
     drivers_taxonomy_filename : filename of the drivers taxonomy file under
         output_postprocessing/data/ (Morocco currently has
         driver_variables_taxonomy_20240117.csv).
@@ -524,8 +439,7 @@ def run_tableau_postprocessing(
         iso_code3      = iso_code3,
         region         = region,
         year_ref       = year_ref,
-        out_path       = out_dir / f"decomposed_emissions_{region}_{year_ref}.csv",
-        hp_cutoff_year = hp_cutoff_year,
+        out_path       = out_dir / f"emissions_{region}_{year_ref}.csv",
     )
     drivers = build_drivers_table(
         run_dir                  = run_dir,

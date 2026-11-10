@@ -135,6 +135,12 @@ def run_cost_benefits(
     """
     cb_config_path = Path(cb_config_path)
 
+    # Strategies with no transformations (e.g. PFLO:BAU) have an empty spec that
+    # pandas reads as NaN; CostBenefits calls .split("|") on it. Treat as baseline.
+    att_strategy = att_strategy.assign(
+        transformation_specification=att_strategy["transformation_specification"].fillna("TX:BASE")
+    )
+
     # Resolve base strategy (fall back to BASE if specified code is absent)
     base_code = _resolve_base_code(strategy_code_base, att_strategy)
 

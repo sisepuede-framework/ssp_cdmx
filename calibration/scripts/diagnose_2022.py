@@ -8,7 +8,8 @@ per calibration/DECISIONS.md. Gates: total +-10%, each sector +-15% (or within
 import argparse
 import pandas as pd
 
-OBS = {"Transport": 17.802, "Energy": 5.237, "IPPU": 0.002, "Waste": 0.361, "AFOLU": 0.067}
+# Transport excludes maquinaria (0.370 Mt, construction off-road) -> Energy (inen).
+OBS = {"Transport": 17.432, "Energy": 5.607, "IPPU": 0.002, "Waste": 0.361, "AFOLU": 0.067}
 
 
 def main():

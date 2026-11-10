@@ -10,15 +10,25 @@ and validated against the **SEDEMA 2022 territorial (Scope-1) GHG inventory =
 
 | Sector (SISEPUEDE→SEDEMA) | Model Mt | SEDEMA Mt | Dev | Gate (±15%) |
 |---|---:|---:|---:|:--:|
-| Transport | 17.670 | 17.802 | −1% | ✅ |
-| Energy (scoe+inen+fgtv+entc) | 4.825 | 5.237 | −8% | ✅ |
+| Transport | 17.431 | 17.432 | −0% | ✅ |
+| Energy (scoe+inen+fgtv+entc) | 5.197 | 5.607 | −7% | ✅ |
 | IPPU | 0.260 | 0.002 | abs 0.26 | ✅* |
 | Waste (waso+trww) | 0.881 | 0.361 | +144% | ⚠️ documented |
 | AFOLU (agrc+lvst+lsmm+soil) | 0.043 | 0.067 | abs 0.02 | ✅* |
-| **TOTAL (gross, excl. FRST)** | **23.679** | **23.465** | **+0.9%** | ✅ **PASS ±10%** |
+| **TOTAL (gross, excl. FRST)** | **23.811** | **23.465** | **+1.5%** | ✅ **PASS ±10%** |
 
-Transport share of gross = **74.6%** (SEDEMA ~76%, target ±5 pp ✅).
+Transport share of gross = **73.2%** (SEDEMA 74.3% excl. maquinaria, target ±5 pp ✅).
 *IPPU/AFOLU: % is meaningless at ~0; both within 0.4 Mt absolute.
+
+**Revision 2026-11-10 (transport category re-mapping):** SEDEMA categories were
+re-mapped to the official SISEPUEDE `$CAT-TRANSPORTATION$` definitions —
+motorcycles → `powered_bikes` (was `road_light`), carga ≤3.8 t → `road_light`,
+terminales de autobuses → `road_heavy_regional`, locomotoras (6,931 t) →
+`rail_freight`, and **maquinaria (0.370 Mt, construction off-road) moved from
+Transport to Energy (`inen`, IPCC 1.A.2.g)**; hence the SEDEMA column now reads
+Transport 17.432 / Energy 5.607. All 10 trns categories match SEDEMA within ±0.3%.
+Motorcycle efficiency is the MOVES-implied effective 9.84 km/L (see
+`03_sectors/transport_research.md`).
 
 ## 2. Methodology
 
@@ -39,7 +49,8 @@ Transport share of gross = **74.6%** (SEDEMA ~76%, target ±5 pp ✅).
   - **Territorial export** of solid waste (to Edomex landfills) and wastewater
     (to Tula/Mezquital via Emisor Central) — emissions out of Scope-1.
 - **Kept national:** emission factors, fuel efficiencies, energy densities,
-  per-tonne intensities, MCFs (technology identical to national).
+  per-tonne intensities, MCFs (technology identical to national) — except
+  powered_bikes gasoline efficiency (MOVES-implied 9.84 km/L).
 
 ## 3. Convergence path (2022 gross, Mt CO2e)
 

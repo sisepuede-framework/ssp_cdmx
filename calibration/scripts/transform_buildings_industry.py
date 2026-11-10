@@ -63,7 +63,10 @@ COM_ELEC_TJ_MMM = 62.0      # ~24 PJ CDMX commercial electricity / 387.39 mmm GD
 
 # --- INEN calibration constants ----------------------------------------------
 INEN_AGRI_PJ = 0.163        # 5,767 tCO2e equipos agricolas / (0.4771 diesel x 74.1)
-INEN_OPM_TJ_MMM = 150.0     # tuned: inen measured 4.48 at 219.4 -> target ~3.1 (SEDEMA 3.16)
+INEN_OPM_TJ_MMM = 168.1     # tuned: opm 3.059 Mt at 150 -> +0.370 Mt SEDEMA maquinaria
+                            # (construction off-road, IPCC 1.A.2.g, moved out of trns)
+# ponytail: maquinaria folded into OPM intensity with the light-industry mix (not a
+# diesel-only stream); split it out if construction-machinery transformers matter.
 FRAC_OPM = {"electricity": 0.40, "natural_gas": 0.44,
             "hydrocarbon_gas_liquids": 0.10, "diesel": 0.06}
 
