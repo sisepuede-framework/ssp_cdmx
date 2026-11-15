@@ -57,14 +57,34 @@ FRAC_COM = {"hydrocarbon_gas_liquids": 0.65, "natural_gas": 0.12, "diesel": 0.03
 
 # consumpinit 2022 targets (trajectory rescaled from baseline shape).
 RES_HEAT_GJ_HH = 10.40      # 1.7163 MtCO2e / 2.766M hh / 59.67 kgCO2 per GJ demand
-RES_ELEC_GJ_HH = 9.50       # ~27 PJ CDMX residential electricity / 2.766M hh
-COM_HEAT_TJ_MMM = 11.98     # 0.2482 MtCO2e / 387.39 mmm GDP / 53.49 kgCO2 per GJ
-COM_ELEC_TJ_MMM = 62.0      # ~24 PJ CDMX commercial electricity / 387.39 mmm GDP
+# Electric appliances scaled so total CDMX final electricity (scoe + inen + trns) =
+# 11,877 GWh = 42.76 PJ (2022, CONACYT PLANEAS / SENER SIE); inen (11.9 PJ, tied to
+# the OPM combustion mix) and trns (Metro etc., 1.9 PJ) kept -> scoe 28.93 PJ.
+# Previous 9.50 / 62.0 gave 18,540 GWh (+56%). Factor 0.5317 on appliances.
+RES_ELEC_GJ_HH = 5.051      # -> ~1,535 kWh/hh/yr incl. electric heat
+COM_HEAT_TJ_MMM = 25.53     # tuned: 0.263 Mt at 11.98 (post elasticity fix) -> 0.5602
+                            # = comercial-institucional 0.222 + comercios y servicios
+                            # regulados 0.312 (point source) + asados al carbon 0.026
+COM_ELEC_TJ_MMM = 32.96     # -> ~13.6 PJ commercial electricity (2022)
+
+# Commercial per-GDP elasticities: national baseline has +13.07 in 2019; with the
+# 2020 COVID GDP/cap drop (-8.6%) the growth factor 1+e*r = -0.117 flips the sign
+# and commercial heat demand/emissions go NEGATIVE from 2020 on (also nationally).
+# Fix: hold pre-2020 values at the 2020 value (-0.5), where the smooth projection
+# trajectory starts. Residential elasticities do not flip (min factor > 0) -> kept.
+ELAST_FIX_YEAR = 2020
+ELAST_FIX_COLS = [
+    "elasticity_scoe_enerdem_per_mmmgdp_commercial_municipal_heat_energy_to_gdppc",
+    "elasticity_scoe_enerdem_per_mmmgdp_commercial_municipal_elec_appliances_to_gdppc",
+]
 
 # --- INEN calibration constants ----------------------------------------------
 INEN_AGRI_PJ = 0.163        # 5,767 tCO2e equipos agricolas / (0.4771 diesel x 74.1)
-INEN_OPM_TJ_MMM = 168.1     # tuned: opm 3.059 Mt at 150 -> +0.370 Mt SEDEMA maquinaria
-                            # (construction off-road, IPCC 1.A.2.g, moved out of trns)
+INEN_OPM_TJ_MMM = 157.69    # tuned: OPM 3.428 Mt at 168.1 -> 3.216 target = SEDEMA
+                            # industria no regulada 2.432 + industrial point 0.417 +
+                            # maquinaria 0.370 (construction off-road, IPCC 1.A.2.g)
+                            # - model agri 0.009; "Comercios y servicios regulados"
+                            # (0.312 point source) moved to SCOE commercial.
 # ponytail: maquinaria folded into OPM intensity with the light-industry mix (not a
 # diesel-only stream); split it out if construction-machinery transformers matter.
 FRAC_OPM = {"electricity": 0.40, "natural_gas": 0.44,
@@ -107,6 +127,12 @@ def transform(df, df_base):
             changed.append(col)
         tot = sum(df[f"frac_scoe_heat_energy_{seg}_{f}"].iloc[0] for f in SCOE_FUELS)
         assert abs(tot - 1.0) < 1e-9, f"scoe {seg} fracs sum {tot}"
+
+    # --- SCOE commercial elasticities: remove pre-2020 sign-flipping values
+    y = df["year"]
+    for col in ELAST_FIX_COLS:
+        df.loc[y < ELAST_FIX_YEAR, col] = df.loc[y == ELAST_FIX_YEAR, col].iloc[0]
+        changed.append(col)
 
     # --- SCOE consumption intensities (rescaled trajectories)
     for col, tgt in [
@@ -184,16 +210,16 @@ def main():
                     "59.67 kgCO2 per GJ demand (mix-weighted, effic-adjusted); trajectory rescaled",
                     SRC_INV))
     rows.append(row("consumpinit_scoe_gj_per_hh_residential_elec_appliances", RES_ELEC_GJ_HH,
-                    "derived: ~27 PJ CDMX residential electricity (56 PJ habitacional minus "
-                    "combustion) / 2.766M hh; trajectory rescaled", SRC_INV))
+                    "tuned: total CDMX final electricity = 11,877 GWh (CONACYT PLANEAS / "
+                    "SENER SIE 2022); appliances x0.5317; trajectory rescaled", SRC_INV))
     rows.append(row("consumpinit_scoe_tj_per_mmmgdp_commercial_municipal_heat_energy",
                     COM_HEAT_TJ_MMM,
-                    "derived: 0.2482 MtCO2e (comercial+asados) / 387.39 mmm GDP / "
-                    "53.49 kgCO2 per GJ demand; trajectory rescaled", SRC_INV))
+                    "tuned: 0.5602 MtCO2e (comercial-institucional + comercios regulados + asados) after "
+                    "elasticity fix; trajectory rescaled", SRC_INV))
     rows.append(row("consumpinit_scoe_tj_per_mmmgdp_commercial_municipal_elec_appliances",
                     COM_ELEC_TJ_MMM,
-                    "derived: ~24 PJ CDMX commercial electricity / 387.39 mmm GDP; "
-                    "trajectory rescaled", SRC_INV))
+                    "tuned: total CDMX final electricity = 11,877 GWh (CONACYT PLANEAS / "
+                    "SENER SIE 2022); appliances x0.5317; trajectory rescaled", SRC_INV))
     rows.append(row("consumpinit_inen_energy_total_pj_agriculture_and_livestock",
                     INEN_AGRI_PJ,
                     "derived: SEDEMA equipos agricolas 5,767 tCO2e / (0.4771 diesel x "
@@ -207,9 +233,13 @@ def main():
                     "re-specify: no fuel-oil use in CDMX agriculture", SRC_INV))
     rows.append(row("consumpinit_inen_energy_tj_per_mmm_gdp_other_product_manufacturing",
                     INEN_OPM_TJ_MMM,
-                    "derived: 3.0 MtCO2e (industria no regulada 2.43 Mt + local point "
-                    "combustion ~0.58 Mt) / 35.44 kgCO2/GJ / (387.39 mmm x 0.996 scalar) "
-                    "= 84.65 PJ -> 219.4 TJ/mmm; trajectory rescaled", SRC_INV))
+                    "tuned: 3.216 MtCO2e = industria no regulada 2.432 + industrial point "
+                    "sources 0.417 + maquinaria 0.370 - model agri 0.009 (comercios "
+                    "regulados -> SCOE); trajectory rescaled", SRC_INV))
+    for col in ELAST_FIX_COLS:
+        rows.append(row(col, float(df.loc[df["year"] == ELAST_FIX_YEAR, col].iloc[0]),
+                        "pre-2020 values held at 2020 value: national +13.07 (2019) x "
+                        "COVID GDP/cap drop flipped commercial demand negative", SRC_INV))
     for f in INEN_FUELS:
         col = f"frac_inen_energy_other_product_manufacturing_{f}"
         rows.append(row(col, FRAC_OPM.get(f, 0.0),
@@ -226,9 +256,8 @@ def main():
 
     n = len(set(changed))
     print(f"buildings-industry transform applied. Columns set: {n}")
-    print("Predicted 2022: SCOE ~1.965 Mt (res 1.716 + com 0.248); "
-          "INEN GDP+agri ~3.0 Mt; production part pending ippu-agent.")
-    print("Kept national: efficfactor/elasticity/scalar scoe, per-tonne inen "
+    print("Targets 2022: SCOE res 1.716 + com 0.560; INEN 3.225 (incl. agri, maquinaria).")
+    print("Kept national: efficfactor/scalar scoe, elasticities except commercial pre-2020, per-tonne inen "
           "intensities, scalar_inen_*, textiles/wood frac groups, other_se, "
           "prodinit_ippu_* (ippu-agent).")
 

@@ -4,6 +4,48 @@ Agent: buildings-industry-energy-agent (Phase 3, sector 4 of 7). Date: 2026-07-0
 Working file: `ssp_modeling/input_data/sisepuede_adj_inputs_CDMX.csv` (mutated in place by
 `calibration/scripts/transform_buildings_industry.py`).
 
+## REVISION 2026-11-10 (supersedes targets/levers below where they differ)
+
+**Mapping (SEDEMA Tabla 27, CDMX, t CO2e → SISEPUEDE):**
+
+| SISEPUEDE | SEDEMA | t CO2e | Model 2022 |
+|---|---|---:|---:|
+| SCOE residential | Combustión habitacional 1,439,796 + Emisiones domésticas 276,535 | 1,716,331 | 1.757 Mt |
+| SCOE commercial_municipal | Combustión comercial-institucional 222,081 + **Comercios y servicios regulados 312,015** (point) + Asados al carbón 26,102 | 560,198 | 0.560 Mt |
+| INEN other_product_manufacturing + agriculture | Industria no regulada 2,431,878 + industrial point sources 417,054 + **Maquinaria 369,813** (off-road, from transport) + Equipos agrícolas 5,767 | 3,224,512 | 3.225 Mt |
+| ENTC | Generación, transmisión y distribución de energía eléctrica | 105,949 | 0.000 Mt |
+| FGTV | Fugas/distribución gas LP + HCNQ | 60 | 0.028 Mt |
+
+Industrial point sources by giro (417,054 t) and the SSP category they would map to if
+INEN were split (today all in OPM, since production-based categories are zeroed by
+IPPU): química 78,578 → chemicals · papel 30,846 → paper · textiles 21,775 → textiles ·
+metálicas básicas 16,863 → metals · plástico/hule 13,437 → plastic · minerales no
+metálicos 3,560 → cement/glass/lime · derivados del petróleo 13,536 → (refining) ·
+alimentos 110,873, bebidas 38,246, impresión 26,611, productos metálicos 16,688,
+equipo de transporte 13,527, otras 24,432, misc ~8,083 → other_product_manufacturing.
+
+**Commercial sign-flip bug (fixed):** SISEPUEDE projects per-GDP demand with
+growth = Π(1 + e·r_gdppc). National `elasticity_scoe_enerdem_per_mmmgdp_commercial_municipal_*`
+= +13.07 in 2019; r_gdppc(2019→2020) = −0.0855 (COVID) → factor −0.117 → commercial
+heat demand and emissions negative 2020–2070 (−0.024 Mt in 2022; nationally −0.256
+factor too). Fix in `transform_buildings_industry.py`: pre-2020 values held at the 2020
+value (−0.5). Residential elasticities checked: no factor ≤ 0, kept.
+Note: only the first-year value of `consumpinit_*` drives the projection (growth via
+elasticities), so the "rescaled trajectory" levers act through their 2015 value.
+Retuned: COM_HEAT 11.98 → 25.53 TJ/mmm, INEN OPM 168.1 → 157.69 TJ/mmm.
+
+**Electricity demand (2026-11-10):** total CDMX final electricity was 18,540 GWh vs
+11,877 GWh reference (CONACYT PLANEAS / SENER SIE 2022, secondary compilation; consistent
+with the 3.4–3.6% national share used for downscaling). The 9.5 GJ/hh residential
+appliance value came from "habitacional ≈ 56 PJ" read as 16% of SEDEMA's 351 PJ chart —
+weak. Appliance intensities scaled ×0.5317 (residential 9.50 → 5.051 GJ/hh ≈ 1,540
+kWh/hh/yr incl. electric heat; commercial 62.0 → 32.96 TJ/mmm); inen (11.9 PJ, part of
+the OPM combustion mix) and trns (1.9 PJ) kept. Result: 42.757 PJ = 11,877 GWh.
+Assumption to verify: sector split (res 36% / com 32% / ind 28% / trns 4%).
+
+Open: "Emisiones domésticas" emits NH3 39,285 t + CO2 but no CH4/N2O — likely not
+combustion (undefined in the PDF); ENTC in-city generation (0.106 Mt) is zero by D1.
+
 ## 1. Emission targets (SEDEMA Inventario de Emisiones CDMX 2022, t CO2e)
 
 | Category (CDMX only) | t CO2e | Mapped to |

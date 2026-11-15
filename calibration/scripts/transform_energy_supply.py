@@ -45,6 +45,12 @@ SRC_D1 = ("DECISIONS.md D1 - CDMX modeled as near-total electricity importer; "
 
 # --- Calibration constants ---------------------------------------------------
 IMPORT_FRAC = 0.999          # approved value; NOT 1.0 (keeps NemoMod non-degenerate)
+# Electricity: SEDEMA 2022 in-city generation = 105,949 t CO2e (federal point sources,
+# CFE turbogas etc.) ~ 1.9 PJ NG ~ 0.76 PJ elec at pp_gas eff 0.4. Local production =
+# (1 - frac) x supply; gas forced to its share via min-share-production
+# (applies to in-region generation only). Tuned against the model run (see memo).
+IMPORT_FRAC_ELEC = 0.98344   # supply ~50.1 PJ (11,877 GWh final + losses) -> local 0.83 PJ
+MIN_SHARE_GAS = 0.90
 CAP_GAS_GW = 0.4174          # 417.4 MW in-city thermal (turbogas 77% + IC 18.3% + steam 4.5%)
 CAP_SOLAR_GW = 0.16132       # 161.32 MW distributed PV (18,686 systems)
 
@@ -76,13 +82,15 @@ CHANGED = (
 def transform(df, df_base=None):
     """Set absolute CDMX energy-supply values on df (all years). Idempotent."""
     for f in IMPORTED_FUELS:
-        L.set_col(df, f"frac_enfu_fuel_demand_imported_pj_fuel_{f}", IMPORT_FRAC)
+        L.set_col(df, f"frac_enfu_fuel_demand_imported_pj_fuel_{f}",
+                  IMPORT_FRAC_ELEC if f == "electricity" else IMPORT_FRAC)
     for f in EXPORT_FUELS:
         L.set_col(df, f"exports_enfu_pj_fuel_{f}", 0.0)
     for t in PP_TECHS:
         L.set_col(df, f"nemomod_entc_residual_capacity_pp_{t}_gw",
                   RESIDUAL_CAP_GW.get(t, 0.0))
-        L.set_col(df, f"nemomod_entc_frac_min_share_production_pp_{t}", 0.0)
+        L.set_col(df, f"nemomod_entc_frac_min_share_production_pp_{t}",
+                  MIN_SHARE_GAS if t == "gas" else 0.0)
     for f in MIN_FUEL_TO_ELEC:
         L.set_col(df, f"frac_enfu_minimum_fuel_to_electricity_fuel_{f}", 0.0)
     return df
@@ -101,12 +109,14 @@ def main():
     rows = []
     for f in IMPORTED_FUELS:
         col = f"frac_enfu_fuel_demand_imported_pj_fuel_{f}"
-        meth = ("direct: CDMX imports ~99.9% of electricity (Scope-1 in-city generation only, D1)"
+        meth = ("tuned: in-city generation share so pp_gas emits SEDEMA 105,949 t CO2e "
+                "(generacion electrica, fuentes puntuales federales); rest imported (D1)"
                 if f == "electricity" else
                 "re-specify: no refineries/extraction/processing in CDMX since 1991 -> demand imported")
         src = SRC_GE if f == "electricity" else SRC_REF
         rows.append(dict(variable=col, subsector="enfu", original_value_mex=orig(col),
-                         new_value_cdmx=IMPORT_FRAC, year=2022, method=meth,
+                         new_value_cdmx=IMPORT_FRAC_ELEC if f == "electricity" else IMPORT_FRAC,
+                         year=2022, method=meth,
                          source_name=f"{src[0]}; {SRC_D1[0]}",
                          source_url=f"{src[1]} ; {SRC_D1[1]}", agent=AGENT))
     for f in EXPORT_FUELS:
@@ -128,9 +138,11 @@ def main():
                          source_name=src[0], source_url=src[1], agent=AGENT))
         col = f"nemomod_entc_frac_min_share_production_pp_{t}"
         rows.append(dict(variable=col, subsector="entc", original_value_mex=orig(col),
-                         new_value_cdmx=0.0, year=2022,
-                         method="re-specify: drop national generation-mix forcing (MSP) for the "
-                                "tiny in-region system; dispatch of residual gas+solar left free",
+                         new_value_cdmx=MIN_SHARE_GAS if t == "gas" else 0.0, year=2022,
+                         method=("tuned: force in-city turbogas to cover its SEDEMA share of local "
+                                 "generation (105,949 t CO2e)") if t == "gas" else
+                                "re-specify: drop national generation-mix forcing (MSP) for the "
+                                "tiny in-region system",
                          source_name=SRC_D1[0], source_url=SRC_D1[1], agent=AGENT))
     for f in MIN_FUEL_TO_ELEC:
         col = f"frac_enfu_minimum_fuel_to_electricity_fuel_{f}"

@@ -80,7 +80,18 @@ non-imported fuel demand plus exports. Production is therefore driven to ~0 stru
 (~12 GWh) that the 0.58 GW residual gas+solar capacity covers trivially; min/max capacity
 bounds are inactive sentinels (-999); MSP=0 removes mix constraints. NemoMod stays feasible.
 
-**Accepted quantitative note:** with 0.999 imports, modeled in-city generation ≈ 12 GWh
+**REVISION 2026-11-10 — in-city generation calibrated to SEDEMA:** the note below
+left pp_gas at 0 PJ (NemoMod met the 0.1% local share with solar), so ENTC ≈ 0 while
+SEDEMA reports 105,949 t CO2e for in-city generation (Tabla 27, federal point sources:
+CO2 105,254 t, CH4 4.65 t, N2O 2.13 t; SF6/HFC not estimated). That is ~1.9 PJ NG ≈
+0.76 PJ elec at eff 0.4. Now `frac_enfu_fuel_demand_imported_pj_fuel_electricity` =
+0.9894 and `nemomod_entc_frac_min_share_production_pp_gas` = 0.90 (other fossil fuels
+stay at 0.999). Result 2022: pp_gas 0.7465 PJ, solar 0.083 PJ, ENTC 0.105 Mt (−0.9%).
+After calibrating final electricity demand to 11,877 GWh (supply ~50.1 PJ incl. losses),
+the import frac was re-tuned to **0.98344** to keep local production at 0.83 PJ
+(pp_gas 0.747 PJ, ENTC 0.1051 Mt).
+
+**Accepted quantitative note (superseded):** with 0.999 imports, modeled in-city generation ≈ 12 GWh
 → ENTC emissions ≈ 0.005 Mt, below SEDEMA's 0.106 Mt in-city figure. The gap (~0.1 Mt,
 0.4% of the 23.465 Mt target) is within D1 tolerance and is the cost of the approved
 single-knob import mechanism. Flagged for the Orchestrator validation pass.

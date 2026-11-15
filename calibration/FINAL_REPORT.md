@@ -11,13 +11,32 @@ and validated against the **SEDEMA 2022 territorial (Scope-1) GHG inventory =
 | Sector (SISEPUEDE→SEDEMA) | Model Mt | SEDEMA Mt | Dev | Gate (±15%) |
 |---|---:|---:|---:|:--:|
 | Transport | 17.431 | 17.432 | −0% | ✅ |
-| Energy (scoe+inen+fgtv+entc) | 5.197 | 5.607 | −7% | ✅ |
+| Energy (scoe+inen+fgtv+entc) | 5.678 | 5.607 | +1% | ✅ |
 | IPPU | 0.260 | 0.002 | abs 0.26 | ✅* |
 | Waste (waso+trww) | 0.881 | 0.361 | +144% | ⚠️ documented |
 | AFOLU (agrc+lvst+lsmm+soil) | 0.043 | 0.067 | abs 0.02 | ✅* |
-| **TOTAL (gross, excl. FRST)** | **23.811** | **23.465** | **+1.5%** | ✅ **PASS ±10%** |
+| **TOTAL (gross, excl. FRST)** | **24.293** | **23.465** | **+3.5%** | ✅ **PASS ±10%** |
 
-Transport share of gross = **73.2%** (SEDEMA 74.3% excl. maquinaria, target ±5 pp ✅).
+Transport share of gross = **71.8%** (SEDEMA 74.3% excl. maquinaria, target ±5 pp ✅).
+
+**Revision 2026-11-10 (energy):** (1) SCOE commercial emissions were NEGATIVE from
+2020 on: the national elasticity of commercial per-GDP demand is +13.07 in 2019, and
+with the 2020 COVID GDP/cap drop (−8.6%) the growth factor 1+e·r = −0.117 flipped the
+sign (same flaw in the national baseline). Pre-2020 commercial elasticities are now
+held at the 2020 value (−0.5). (2) SEDEMA "Comercios y servicios regulados" (0.312 Mt
+point source) moved from `inen` to SCOE commercial. Energy split now: SCOE residential
+1.757 vs 1.716 · commercial 0.560 vs 0.560 · INEN 3.225 vs 3.225 · ENTC 0.105 vs 0.106
+· FGTV 0.028 vs ~0. (3) ENTC in-city generation calibrated: SEDEMA "Generación,
+transmisión y distribución de energía eléctrica" = 105,949 t CO2e (federal point
+sources, CFE turbogas; combustion only, imported power excluded). Electricity import
+frac 0.999 → 0.9894 (now 0.98344, see 4) and `nemomod_entc_frac_min_share_production_pp_gas` = 0.90 →
+pp_gas 0.75 PJ (~207 GWh, ~6% capacity factor of 417.4 MW). Constant share, so ENTC
+grows with demand (0.236 Mt in 2060). (4) Final electricity demand calibrated to 11,877 GWh (2022,
+CONACYT PLANEAS / SENER SIE): it was 18,540 GWh (+56%). Residential/commercial appliance
+intensities ×0.5317 (9.50 → 5.051 GJ/hh; 62.0 → 32.96 TJ/mmm); inen and trns electricity
+kept. Split: residential 15.3 PJ (~1,540 kWh/hh) · commercial 13.6 · industry 11.9 ·
+transport 1.9. Electricity import frac re-tuned 0.9894 → 0.98344 so in-city generation
+stays 0.83 PJ (ENTC 0.105 Mt). No Scope-1 change.
 *IPPU/AFOLU: % is meaningless at ~0; both within 0.4 Mt absolute.
 
 **Revision 2026-11-10 (transport category re-mapping):** SEDEMA categories were
