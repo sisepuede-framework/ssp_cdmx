@@ -10,14 +10,16 @@ and validated against the **SEDEMA 2022 territorial (Scope-1) GHG inventory =
 
 | Sector (SISEPUEDE→SEDEMA) | Model Mt | SEDEMA Mt | Dev | Gate (±15%) |
 |---|---:|---:|---:|:--:|
-| Transport | 17.431 | 17.432 | −0% | ✅ |
+| Transport | 17.431 | 17.332 | +1% | ✅ |
 | Energy (scoe+inen+fgtv+entc) | 5.678 | 5.607 | +1% | ✅ |
-| IPPU | 0.260 | 0.002 | abs 0.26 | ✅* |
-| Waste (waso+trww) | 0.881 | 0.361 | +144% | ⚠️ documented |
+| IPPU | 0.103 | 0.102 | +1% | ✅ |
+| Waste (waso+trww) | 0.395 | 0.361 | +9% | ✅ |
 | AFOLU (agrc+lvst+lsmm+soil) | 0.043 | 0.067 | abs 0.02 | ✅* |
-| **TOTAL (gross, excl. FRST)** | **24.293** | **23.465** | **+3.5%** | ✅ **PASS ±10%** |
+| **TOTAL (gross, excl. FRST)** | **23.649** | **23.465** | **+0.8%** | ✅ **PASS ±10%** |
 
-Transport share of gross = **71.8%** (SEDEMA 74.3% excl. maquinaria, target ±5 pp ✅).
+Figures as of 2026-11-16 (after the waste and IPPU re-specifications in §4; output of
+`run_all.sh --run`). Transport share of gross = **73.7%** (SEDEMA 73.9% excl. maquinaria
+and vehicle A/C HFC, target ±5 pp ✅).
 
 **Revision 2026-11-10 (energy):** (1) SCOE commercial emissions were NEGATIVE from
 2020 on: the national elasticity of commercial per-GDP demand is +13.07 in 2019, and
@@ -37,7 +39,7 @@ intensities ×0.5317 (9.50 → 5.051 GJ/hh; 62.0 → 32.96 TJ/mmm); inen and trn
 kept. Split: residential 15.3 PJ (~1,540 kWh/hh) · commercial 13.6 · industry 11.9 ·
 transport 1.9. Electricity import frac re-tuned 0.9894 → 0.98344 so in-city generation
 stays 0.83 PJ (ENTC 0.105 Mt). No Scope-1 change.
-*IPPU/AFOLU: % is meaningless at ~0; both within 0.4 Mt absolute.
+*AFOLU: % is meaningless at ~0; within 0.4 Mt absolute.
 
 **Revision 2026-11-10 (transport category re-mapping):** SEDEMA categories were
 re-mapped to the official SISEPUEDE `$CAT-TRANSPORTATION$` definitions —
@@ -45,7 +47,8 @@ motorcycles → `powered_bikes` (was `road_light`), carga ≤3.8 t → `road_lig
 terminales de autobuses → `road_heavy_regional`, locomotoras (6,931 t) →
 `rail_freight`, and **maquinaria (0.370 Mt, construction off-road) moved from
 Transport to Energy (`inen`, IPCC 1.A.2.g)**; hence the SEDEMA column now reads
-Transport 17.432 / Energy 5.607. All 10 trns categories match SEDEMA within ±0.3%.
+Transport 17.432 / Energy 5.607 (Transport later 17.332 after moving vehicle A/C HFC
+to IPPU, see §4). All 10 trns categories match SEDEMA within ±0.3%.
 Motorcycle efficiency is the MOVES-implied effective 9.84 km/L (see
 `03_sectors/transport_research.md`).
 

@@ -1,8 +1,8 @@
-# SSP_Mexico
+# SSP_CDMX
 
 This repository contains notebooks and supporting files used to run the
-**SISEPUEDE** model on Egypt's mitigation scenarios. All modeling resources
-reside in the `ssp_modeling` folder described below.
+**SISEPUEDE** model on Mexico City's (CDMX) mitigation scenarios. All modeling
+resources reside in the `ssp_modeling` folder described below.
 
 
 ## Instructions: Setting Up the SISEPUEDE Environment
@@ -17,16 +17,10 @@ Open the `environment.yml` file in your preferred text editor (such as VS Code, 
 At the very top, you'll see a line like:
 
 ```yaml
-name: sisepuede
+name: ssp_cdmx
 ```
 
-**Change `sisepuede` to your preferred environment name, usually related to the region you are working with** (e.g., `ssp-egypt`, `ssp-usa`, or whatever you'd like).
-
-For example:
-
-```yaml
-name: ssp-egypt
-```
+**Change `ssp_cdmx` to your preferred environment name if you like.**
 
 ### 3. **Create the Environment from the `.yml` File**
 
@@ -46,7 +40,7 @@ After installation, activate your new environment with:
 conda activate <your_env_name>
 ```
 
-*(Replace `<your_env_name>` with the name you specified in the `.yml` file, e.g., `ssp-egypt`)*
+*(Replace `<your_env_name>` with the name you specified in the `.yml` file, e.g., `ssp_cdmx`)*
 
 
 ### 5. **Done!**
@@ -66,18 +60,23 @@ Your environment is now ready to use, with all dependencies (including those ins
   ```bash
   conda env list
   ```
+* The energy model (NemoMod) runs on Julia through `juliacall`. The first run
+  precompiles Julia (~2 min) and may print a method-overwrite `ERROR` line; it does
+  not stop the run.
+
 ## Project Structure
 
 The most relevant files are inside the `ssp_modeling` directory:
 
-- `config_files/` – YAML configuration files used by the notebooks.
-- `input_data/` – Raw CSVs for each scenario.
-- `notebooks/` – Jupyter notebooks that manage the modeling runs.
-- `ssp_run/` – Output folders created after executing a scenario.
-- `scenario_mapping/` – Spreadsheets with the mapping between SSP transformations and region-specific measures. This is where the scenarios and transformation intensities are defined.
+- `config_files/` – YAML configuration file used by the notebook.
+- `input_data/` – SISEPUEDE input CSV for CDMX (`sisepuede_adj_inputs_CDMX.csv`).
+- `notebooks/` – `cdmx_manager.ipynb`, the notebook that manages the modeling runs, plus `shared_scripts/` for postprocessing and cost-benefits.
+- `ssp_run_output/` – Output folders created after executing a scenario.
+- `scenario_mapping/` – Spreadsheets with the mapping between SSP transformations and CDMX measures (PACCM). This is where the scenarios and transformation intensities are defined.
 - `transformations/` – CSVs and YAML files describing the transformations applied by the model.
-- `output_postprocessing/` – R scripts used to rescale model results and
-    generate processed outputs.
+- `cost-benefits/` – Configuration for the cost-benefit analysis.
+- `output_postprocessing/` – Scripts and crosswalks used to process model results.
+- `tableau/` – Tableau dashboard (`CDMX_CaseStudy.twbx`).
 
 ## Steps to run the model and load data to Tableau for analysis
 
@@ -85,17 +84,16 @@ All files and folders referenced here are inside the `ssp_modeling` directory.
 
 1. **Run the model in the notebook**
 
-   * Edit or create a configuration file in `config_files/`.
-   * Set up the transformations spreadsheet for custom Strategies and save it in `scenario_mapping/`.
-   * Open the manager notebook inside `notebooks/` and run the cells to execute the model.
+   * Edit the configuration file in `config_files/config.yaml`. Keep `country_name: "mexico"`: it is the only region label SISEPUEDE recognizes; outputs are relabeled `cdmx` during postprocessing.
+   * Set up the transformations spreadsheet for custom Strategies and save it in `scenario_mapping/` (default: `ssp_cdmx_transformation_strategy.xlsx`).
+   * Open `notebooks/cdmx_manager.ipynb` and run the cells to execute the model. Set `strategies_to_run` to the strategy ids you want (default `[0, 6004]`: BASE and PACCM).
 
 2. **Post-process results**
-    * If you require emission targets, generate the targets file by following the instructions in the [ssp_emission_targets repository](https://github.com/sisepuede-framework/ssp_emission_targets).
-    * Run the `postprocessing_250820.r` script, editing it to point to the correct data.
-    * The script will generate three files; two of them are used in Tableau.
+
+   * The last cells of the notebook write `decomposed_ssp_output.csv` in the run folder and build the Tableau tables (emissions, drivers, levers) in `tableau/data/`.
+   * The cost-benefit cell compares each strategy against BASE and writes `tableau/data/cb_data.csv`.
 
 3. **Load data into Tableau**
 
-   * In the `tableau` directory, locate the Tableau dashboard file and the `data` folder.
-   * Copy the postprocessing output files into the `data` folder.
-   * Load the files beginning with `decomposed_emissions_` and `drivers_` into Tableau.
+   * Open `tableau/CDMX_CaseStudy.twbx`.
+   * Point it to the files in `tableau/data/` (`emissions_cdmx_2022.csv`, `drivers_cdmx.csv`, `cb_data.csv`).
