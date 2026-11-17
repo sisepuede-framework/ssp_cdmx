@@ -41,7 +41,10 @@ QTY_WASO = 0.012
 # from untreated water is emitted OUTSIDE CDMX. Under Scope-1 territorial
 # accounting (same logic as solid-waste export), only the in-territory load
 # counts; scaled from the IPCC-default 0.045 to match SEDEMA trww 0.309 Mt.
-BOD_PER_CAPITA = 0.006
+# REVISION 2026-11-16: 0.006 -> 0.018. The old value was crushed to offset the
+# industrial-N N2O (see TRWW_FIX). With industrial N/COD at 0, BOD alone carries
+# SEDEMA wastewater CH4 (9,358 t = 262 kt CO2e) at the national MCF 0.25.
+BOD_PER_CAPITA = 0.018
 
 # Municipal waste composition (frac_waso_initial_composition_mun_*) is kept
 # NATIONAL: the national profile is already ~52% food/organic (close to CDMX's
@@ -92,7 +95,25 @@ PROTEIN = {
     "qty_protein_per_capita_kg": 0.018,
     # commercial/industrial wastewater COD load (GDP-driven) is likewise routed
     # out of territory via the Emisor Central to Tula; scale to in-territory share.
-    "physparam_wali_tonne_cod_per_mmm_gdp": 150.0,
+    # REVISION 2026-11-16: 150 -> ~0, see TRWW_FIX. Not exactly 0: SISEPUEDE
+    # allocates industrial N by COD share (N/sum COD) and 0/0 = NaN wipes out ALL
+    # wastewater N2O, domestic included.
+    "physparam_wali_tonne_cod_per_mmm_gdp": 1e-6,
+}
+
+# REVISION 2026-11-16 — wastewater re-specification against SEDEMA Tabla 27
+# (aguas residuales no tratadas 243,191 + tratamiento 65,750 t CO2e = 0.309 Mt;
+# CH4 9,358 t, N2O 177 t). SEDEMA estimates only domestic (protein-N, BOD) load;
+# industrial discharges to the sewer are folded into F_IND-COM = 1.25.
+#  - industrial N (0.3 kg N/m3 x 1e6 m3/mmm GDP) was ~78% of model N (~51 kt) and
+#    grew with GDP -> N2O 659 kt vs SEDEMA 47 kt. Industrial N and COD -> 0.
+#  - SISEPUEDE applies 0.012 g N2O-N/g N both inside the untreated sewer and to the
+#    effluent (double count). IPCC 2006 counts only effluent at 0.005; the model
+#    takes the effluent EF from the untreated_no_sewerage category.
+TRWW_FIX = {
+    "density_wali_kg_n_per_m3_ww_industrial": 0.0,
+    "ef_trww_untreated_with_sewerage_g_n2o_per_g_n": 0.0,
+    "ef_trww_untreated_no_sewerage_g_n2o_per_g_n": 0.005,
 }
 
 SUM1_GROUPS = {
@@ -111,7 +132,7 @@ def transform(df):
         L.set_col(df, "qty_waso_initial_municipal_waste_tonne_per_capita", QTY_WASO)
     if "physparam_wali_daily_kg_bod_per_capita" in df.columns:
         L.set_col(df, "physparam_wali_daily_kg_bod_per_capita", BOD_PER_CAPITA)
-    for grp in (WASO_NONREC, WASO_SCALAR, WALI_URBAN, WALI_INDUSTRIAL, PROTEIN):
+    for grp in (WASO_NONREC, WASO_SCALAR, WALI_URBAN, WALI_INDUSTRIAL, PROTEIN, TRWW_FIX):
         for col, val in grp.items():
             if col in df.columns:
                 L.set_col(df, col, float(val))
@@ -127,7 +148,7 @@ def main():
     changed = ["qty_waso_initial_municipal_waste_tonne_per_capita",
                "physparam_wali_daily_kg_bod_per_capita"] + \
         list(WASO_NONREC) + list(WASO_SCALAR) + list(WALI_URBAN) + \
-        list(WALI_INDUSTRIAL) + list(PROTEIN)
+        list(WALI_INDUSTRIAL) + list(PROTEIN) + list(TRWW_FIX)
     rows = []
     for col in changed:
         if col not in df.columns:
@@ -141,8 +162,11 @@ def main():
             "method": ("territorial: 77.7% waste exported to Edomex (out of Scope-1); "
                        "in-territory disposed 0.087 t/cap; real gen 0.391 t/cap (IRS 2023)")
             if col.startswith("qty_waso") else
+            ("SEDEMA scope: no industrial-wastewater N/COD (F_IND-COM 1.25 covers sewer "
+             "co-discharge); N2O only on effluent at IPCC 0.005 (no sewer double count)"
+             if col in TRWW_FIX or col == "physparam_wali_tonne_cod_per_mmm_gdp" else
             ("CDMX 17.9% wastewater treated (SACMEX), rest untreated-with-sewerage"
-             if is_ww else "CDMX composition/disposal (IRS 2023); tuned to SEDEMA anchor"),
+             if is_ww else "CDMX composition/disposal (IRS 2023); tuned to SEDEMA anchor")),
             "source_name": SRC_WW if is_ww else SRC_W,
             "source_url": URL_WW if is_ww else URL_W,
             "agent": "waste-agent",

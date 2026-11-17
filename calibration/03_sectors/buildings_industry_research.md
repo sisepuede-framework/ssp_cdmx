@@ -4,6 +4,18 @@ Agent: buildings-industry-energy-agent (Phase 3, sector 4 of 7). Date: 2026-07-0
 Working file: `ssp_modeling/input_data/sisepuede_adj_inputs_CDMX.csv` (mutated in place by
 `calibration/scripts/transform_buildings_industry.py`).
 
+## REVISION 2026-11-16 — SCOE projection elasticities set to 0 after 2022
+
+National `elasticity_scoe_enerdem_per_hh_residential_*_to_gdppc` and
+`elasticity_scoe_enerdem_per_mmmgdp_commercial_municipal_*_to_gdppc` ramp to 1.0 by
+2050. With CDMX GDP/cap ×3.27 (2022→2060) and households ×0.89, this doubled heat
+demand per household (residential 1.76 → 3.40 Mt) and grew commercial per-GDP intensity
+on top of GDP (0.56 → 2.70 Mt, ×4.8): SCOE 2.32 → 6.10 Mt. Now 0 for years > 2022
+(heat + elec_appliances, both segments): residential follows households, commercial
+follows GDP. 2022 unchanged (2.317 Mt); 2060 SCOE = 3.00 Mt (res 1.57, com 1.43);
+SCOE electricity 2060 66.5 → 49.0 PJ. Commercial 2030 is slightly higher than before
+(0.655 vs 0.635 Mt) because the national path was negative (−0.4 → 0) in 2022–2030.
+
 ## REVISION 2026-11-10 (supersedes targets/levers below where they differ)
 
 **Mapping (SEDEMA Tabla 27, CDMX, t CO2e → SISEPUEDE):**

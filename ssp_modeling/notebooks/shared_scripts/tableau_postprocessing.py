@@ -40,6 +40,44 @@ import pandas as pd
 # Emissions table (data_prep_new_mapping.r)
 # ---------------------------------------------------------------------------
 
+# In the model all CDMX industrial energy sits in INEN other_product_manufacturing
+# (IPPU tonnages are 0, so the per-tonne categories emit nothing). For reporting,
+# move the SEDEMA 2022 industrial point sources that carry an industry type
+# (Tabla 27, t CO2e) to their SSP category. Denominator = everything calibrated
+# into OPM: industria no regulada 2,431,878 + point sources 417,054 + maquinaria
+# 369,813. Industria no regulada has no industry type -> stays in OPM.
+# ponytail: shares fixed at 2022 for every year/strategy; make them time-varying
+# if a strategy targets one industry type.
+_OPM_SEDEMA_T = 2_431_878 + 417_054 + 369_813
+INEN_OPM_SPLIT = {
+    "chemicals": 78_578 / _OPM_SEDEMA_T,
+    "paper":     30_846 / _OPM_SEDEMA_T,
+    "textiles":  21_775 / _OPM_SEDEMA_T,
+    "metals":    16_863 / _OPM_SEDEMA_T,
+    "plastic":   13_437 / _OPM_SEDEMA_T,   # plástico y hule
+    "glass":      3_560 / _OPM_SEDEMA_T,   # minerales no metálicos
+}
+
+
+FGAS_AGGREGATES = ("emission_co2e_hfcs_", "emission_co2e_pfcs_", "emission_co2e_other_fcs_")
+
+
+def split_inen_opm(df: pd.DataFrame) -> pd.DataFrame:
+    """Reallocate INEN OPM rows to industry-type categories by INEN_OPM_SPLIT; total preserved."""
+    is_opm = (df["variable"].str.contains("_inen_")
+              & df["variable"].str.endswith("other_product_manufacturing"))
+    parts = []
+    for cat, share in INEN_OPM_SPLIT.items():
+        p = df[is_opm].copy()
+        p["value"] *= share
+        p["subsector_category"] = p["subsector_category"].str.replace(
+            "other_product_manufacturing", cat)
+        parts.append(p)
+    df = df.copy()
+    df.loc[is_opm, "value"] *= 1 - sum(INEN_OPM_SPLIT.values())
+    return pd.concat([df, *parts], ignore_index=True)
+
+
 def build_emissions_table(
     run_dir: Path,
     targets_path: Path,
@@ -89,13 +127,17 @@ def build_emissions_table(
         prefix = f"emission_co2e_{str(row['gas']).lower()}_{row['subsector_ssp']}_"
         for v in str(row["vars"]).split(":"):
             v = v.strip()
-            if not v or v not in data_cols:
+            # hfcs/pfcs/other_fcs are SISEPUEDE sums of the individual gases, which
+            # the mapping also lists -> skip them or IPPU F-gases count twice.
+            if not v or v not in data_cols or v.startswith(FGAS_AGGREGATES):
                 continue
             var_rows.append({
                 "variable":  v,
                 "ID":        row["ID"],
                 "sector":    row["sector"],
                 "subsector": row["subsector"],
+                "sector_es":    row["sector_es"],
+                "subsector_es": row["subsector_es"],
                 "Gas":       row["gas"],
                 "subsector_category":  v[len(prefix):] if v.startswith(prefix) else v,
             })
@@ -110,10 +152,14 @@ def build_emissions_table(
     # 6 — merge variable → (sector, subsector, subsector_category, Gas, ID)
     data_new = data_new.merge(var_map, on="variable", how="left")
 
+    # 6b — reporting-only split of INEN other_product_manufacturing by industry type
+    data_new = split_inen_opm(data_new)
+
     # 7 — aggregate to (subsector, subsector_category, gas) grain
     data_new = (
         data_new.groupby(
-            ["primary_id", "time_period", "ID", "sector", "subsector", "subsector_category", "Gas"],
+            ["primary_id", "time_period", "ID", "sector", "subsector", "subsector_category", "Gas",
+             "sector_es", "subsector_es"],
             dropna=False,
             as_index=False,
         )["value"]
@@ -169,16 +215,24 @@ def build_emissions_table(
         ["strategy_id", "sector", "subsector", "Gas", "Year"], na_position="last"
     ).reset_index(drop=True)
 
-    # 11 — no HP smoothing: emit raw SSP values. value_original / value_hp are
-    #      kept (the Tableau workbook binds them) as aliases of the raw value.
-    combined["value_original"] = combined["value"].astype(float)
-    combined["value_hp"]       = combined["value"].astype(float)
+    # 11 — Spanish subsector_category label from output_postprocessing/data/subsector_category_es.csv
+    #      (next to data/invent/). Unknown categories fall back to the raw code.
+    cat_es = pd.read_csv(Path(targets_path).parents[1] / "subsector_category_es.csv")
+    cat_es = dict(zip(cat_es["subsector_category"], cat_es["subsector_category_es"]))
+    combined["subsector_category_es"] = combined["subsector_category"].map(cat_es)
+    missing = combined["subsector_category"].notna() & combined["subsector_category_es"].isna()
+    if missing.any():
+        print(f"[emissions] subsector_category sin traducción (se deja el código): "
+              f"{sorted(combined.loc[missing, 'subsector_category'].unique())}")
+        combined.loc[missing, "subsector_category_es"] = combined.loc[missing, "subsector_category"]
 
     # 12 — write CSV with the column order expected by Tableau
     final_cols = [
         "strategy_id", "primary_id", "ID", "sector", "subsector", "subsector_category", "value",
         "Year", "Gas", "design_id", "future_id", "strategy", "Code",
-        "Contry", "source", "value_original", "value_hp",
+        "Contry", "source",
+        # Spanish labels, appended so existing Tableau bindings keep working
+        "sector_es", "subsector_es", "subsector_category_es",
     ]
     final_cols = [c for c in final_cols if c in combined.columns]
     out = combined[final_cols].copy()
@@ -187,6 +241,53 @@ def build_emissions_table(
     out.to_csv(out_path, index=False)
     print(f"[emissions] {out_path}  ({len(out):,} rows)")
     return out
+
+
+# CDMX municipal solid waste sent to Estado de México landfills (SEDEMA IRS 2023,
+# receipts t/day: La Cañada 2,284.42 + El Milagro 2,269.45 + Bicentenario 1,516.40 +
+# Naucalpan 476.25 + La Perseverancia 230.92). Emitted outside CDMX -> GPC scope 3,
+# not in the SEDEMA territorial (scope 1) benchmark the model is calibrated to.
+EXPORTED_MSW_T_PER_YEAR = 6_777.44 * 365
+
+
+def build_waste_gpc_table(emissions: pd.DataFrame, run_dir: Path, out_path: Path) -> pd.DataFrame:
+    """Reporting-only GPC scope-3 line: CH4 from CDMX waste landfilled in Edomex.
+
+    The model only carries the small in-territory waste stream. Exported emissions =
+    in-territory landfill CH4 x F, with F = exported tonnes / BASE-strategy 2022
+    in-territory landfilled MSW tonnes (industrial 'chemical_industrial' excluded).
+    F is fixed, so Basura Cero levers (food waste, recycling, compost, biogas capture)
+    scale the exported line by the same proportion they cut the in-territory one.
+    """
+    # ponytail: exported stream assumed to behave like the in-territory landfilled
+    # stream (same composition, FOD history, 20% gas recovery); model the Edomex
+    # sites explicitly if site-level data (MCF, capture) becomes available.
+    att = pd.read_csv(run_dir / "ATTRIBUTE_PRIMARY.csv")
+    base_pid = att.loc[att["strategy_id"] == 0, "primary_id"].iloc[0]
+    cols = pd.read_csv(run_dir / "decomposed_ssp_output.csv", nrows=0).columns
+    lf = [c for c in cols if c.startswith("qty_waso_landfilled_") and c.endswith("_tonne")
+          and "chemical_industrial" not in c]
+    d = pd.read_csv(run_dir / "decomposed_ssp_output.csv", usecols=["primary_id", "time_period"] + lf)
+    lf_2022 = float(d.loc[(d.primary_id == base_pid) & (d.time_period == 2022 - 2015), lf].sum(axis=1).iloc[0])
+    factor = EXPORTED_MSW_T_PER_YEAR / lf_2022
+
+    g = emissions[emissions["subsector_category"].astype(str).str.startswith("landfilled_")].copy()
+    g["value"] *= factor
+    g["subsector_category"] = "exported_" + g["subsector_category"]
+    if "subsector_category_es" in g:
+        g["subsector_category_es"] = g["subsector_category_es"].str.replace(
+            "Relleno sanitario", "Relleno Edomex (exportado)")
+    g["subsector"] = "4.A - Solid Waste Disposal (exported, GPC scope 3)"
+    if "subsector_es" in g:
+        g["subsector_es"] = "Residuos sólidos exportados al Edomex (alcance 3 GPC)"
+    g["ID"] = g["subsector"] + ":" + g["Gas"].astype(str)
+    g["source"] = "SISEPUEDE x GPC export factor"
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    g.to_csv(out_path, index=False)
+    print(f"[waste GPC] factor {factor:.1f} (exported {EXPORTED_MSW_T_PER_YEAR:,.0f} t / "
+          f"in-territory landfilled {lf_2022:,.0f} t, 2022)  {out_path}  ({len(g):,} rows)")
+    return g
 
 
 # ---------------------------------------------------------------------------
@@ -248,6 +349,14 @@ def build_drivers_table(
     for kw, label in energy_keywords.items():
         es = es.where(~long_df["variable"].str.contains(kw, regex=False, na=False), label)
     long_df.loc[energy_mask, "energy_subsector"] = es[energy_mask]
+    long_df["energy_subsector_es"] = long_df["energy_subsector"].map({
+        "Carbon Capture and Sequestration": "Captura y secuestro de carbono",
+        "Industrial Energy": "Energía industrial",
+        "Power(electricity/heat)": "Generación (electricidad/calor)",
+        "Transportation": "Transporte",
+        "Buildings": "Edificaciones",
+        "TBD": "Por definir",
+    })
 
     # GDP history
     gdp = pd.read_csv(wide_inputs_outputs_path, usecols=["primary_id", "time_period", "gdp_mmm_usd"])
@@ -279,6 +388,10 @@ def build_drivers_table(
     drivers_hist["Country"]          = region
     drivers_hist["output_type"]      = "drivers"
     drivers_hist["energy_subsector"] = np.nan
+    drivers_hist["sector_es"]        = "Socioeconómico"
+    drivers_hist["subsector_es"]     = "Economía"
+    drivers_hist["model_variable_es"] = "PIB"
+    drivers_hist["gas_name_es"]      = ""
 
     years_in_sim = long_df.loc[long_df["variable"] == "gdp_mmm_usd", "Year"].dropna().unique()
     if len(years_in_sim):
@@ -290,6 +403,8 @@ def build_drivers_table(
         "model_variable", "category_value", "category_name", "gas", "gas_name",
         "Year", "design_id", "future_id", "strategy", "Units", "Data_Type",
         "iso_code3", "Country", "output_type", "energy_subsector",
+        # Spanish labels, appended so existing Tableau bindings keep working
+        "sector_es", "subsector_es", "model_variable_es", "gas_name_es", "energy_subsector_es",
     ]
     for c in out_cols:
         if c not in long_df.columns:
@@ -440,6 +555,12 @@ def run_tableau_postprocessing(
         region         = region,
         year_ref       = year_ref,
         out_path       = out_dir / f"emissions_{region}_{year_ref}.csv",
+    )
+    # separate file so territorial totals in existing Tableau views are unchanged
+    build_waste_gpc_table(
+        emissions,
+        run_dir  = run_dir,
+        out_path = out_dir / f"emissions_waste_gpc_scope3_{region}_{year_ref}.csv",
     )
     drivers = build_drivers_table(
         run_dir                  = run_dir,

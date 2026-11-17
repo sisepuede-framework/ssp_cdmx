@@ -140,6 +140,13 @@ def main():
                    if f in df_out.columns]
     year_col = df_in["year"].values if "year" in df_in.columns else None
     df_emis = df_out[emis_fields].copy()
+    # SISEPUEDE's ippu total also adds the hfcs/pfcs/other_fcs aggregates on top of
+    # the individual gases they sum -> recompute so F-gases are counted once.
+    fgas_agg = ("emission_co2e_hfcs_", "emission_co2e_pfcs_", "emission_co2e_other_fcs_")
+    ippu_vars = [c for c in df_out.columns if c.startswith("emission_co2e_") and "_ippu_" in c
+                 and "subsector_total" not in c and not c.startswith(fgas_agg)]
+    if "emission_co2e_subsector_total_ippu" in df_emis.columns:
+        df_emis["emission_co2e_subsector_total_ippu"] = df_out[ippu_vars].sum(axis=1).values
     df_emis.insert(0, "time_period", df_in["time_period"].values)
     if year_col is not None:
         df_emis.insert(1, "year", year_col)

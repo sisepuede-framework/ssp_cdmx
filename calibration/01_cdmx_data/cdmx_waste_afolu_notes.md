@@ -25,6 +25,40 @@ Compiled 2026-07-03. Official sources only (SEDEMA, SACMEX/INEGI, CORENADR/CONAF
 - Intermediate infrastructure (2023): transfer stations received **7,884.22 t/day**; selection/recycling plants received **3,076.82 t/day** (largest: San Juan de Aragón Fase II); composta plants received **352,825.18 t/year** of organics (−14.8% vs 2022, partly because Cuajimalpa did not report).
 - Source: SEDEMA IRS 2023 (same URL as above).
 
+### 3b. Exported waste — GPC scope-3 reporting line (2026-11-16)
+- The calibrated model (SEDEMA territorial scope 1) only carries the in-territory stream
+  (`qty_waso_initial_municipal_waste_tonne_per_capita` = 0.012 vs real 0.391): WASO 2022
+  ≈ 0.083 Mt vs SEDEMA 0.048 Mt. Emissions from the waste CDMX landfills in Edomex are
+  outside that scope, so Basura Cero levers barely register territorially.
+- `tableau_postprocessing.build_waste_gpc_table` writes a separate
+  `emissions_waste_gpc_scope3_<region>_<year>.csv` (same schema as the emissions table):
+  in-territory landfill CH4 × F, F = 2,473,766 t/yr exported (6,777.44 t/d received by the
+  5 Edomex sites, IRS 2023) ÷ BASE 2022 in-territory landfilled MSW (79,971 t) ≈ 30.9.
+- Result (BASE): **1.56 Mt CO2e in 2022**, 1.75 (2030), 1.84 (2040), 1.82 (2060) —
+  ~0.63 t CO2e per landfilled tonne. Food 1.05, paper 0.29, yard 0.12 Mt (2022).
+- F is fixed, so levers that cut in-territory landfill CH4 (food waste, recycling,
+  compost/biogas, gas capture) cut the exported line by the same proportion.
+- Assumptions: exported stream has the in-territory composition, FOD history and 20% gas
+  recovery; uses the 6,777 t/d site receipts, not 77.7% × 12,454 t/d (= 9,677 t/d; the
+  gap is likely rejects/transfers not reaching the 5 sites). Not added to the territorial
+  totals.
+
+### 3c. Wastewater re-specification against SEDEMA (2026-11-16)
+- SEDEMA Tabla 27: aguas residuales no tratadas 243,191 + tratamiento 65,750 = **0.309 Mt**
+  (CH4 9,358 t = 262 kt; N2O 177 t = 47 kt). Domestic load only (protein N, BOD);
+  industrial discharges to the sewer are folded into F_IND-COM = 1.25.
+- Model was 0.798 Mt (CH4 139 kt, N2O 659 kt) and grew to 1.69 Mt by 2060:
+  industrial N (0.3 kg N/m3 x 1e6 m3/mmm GDP, ~51 kt N, GDP-driven) was ~78% of N, and
+  SISEPUEDE applies 0.012 g N2O-N/g N both in the untreated sewer and to its effluent.
+  Earlier calibration had compensated by crushing domestic BOD (45 -> 6 g/d).
+- Fix (`transform_waste.py`, TRWW_FIX): industrial N density 0; industrial COD 1e-6
+  (not 0: N is allocated by COD share, 0/0 = NaN wipes all N2O); untreated-with-sewerage
+  N2O EF 0; untreated-no-sewerage EF 0.005 (IPCC effluent; the model uses it as the
+  effluent EF for every path); BOD 0.006 -> 0.018 kg/cap/d (national MCF 0.25 kept).
+- Result (BASE): TRWW 2022 **0.312 Mt** (CH4 0.266, N2O 0.046); 0.323 (2030), 0.336
+  (2040), 0.344 (2060). Waste gate 0.395 vs 0.361 (+9%, OK); total 23.649 (+0.8%).
+- `wali_inc_treatment_industrial` lever now has no effect (industrial stream ~0).
+
 ### 4. Wastewater (Task 4)
 - **25 PTAR in operation** (15 secondary + 10 tertiary), all public/SACMEX-operated.
 - **Installed capacity 5,497 l/s (~5.5 m³/s)**; **volume treated 88.7 million m³/year (~2.8 m³/s avg)** (secondary 17.7 + tertiary 71.0 Mm³). Source: INEGI cuadro entidad (SACMEX data), 2017 — https://www.inegi.org.mx/app/cuadroentidad/CDMX/2018/02/2_11

@@ -17,7 +17,8 @@ builder guarantees the mapped emissions sum EXACTLY to
   label). This is what makes the total reconcile to the penny.
 
 Output: output_postprocessing/data/invent/crosswalk_cdmx_ssp.csv, also copied to
-emission_targets_mex_2022.csv (the filename run_tableau_postprocessing loads).
+emission_targets_cdmx_2022.csv (the filename run_tableau_postprocessing loads).
+Adds sector_es / subsector_es (Spanish labels for Tableau).
 
 Usage:
   python build_crosswalk_cdmx.py [--run-dir <sisepuede_results_dir>]
@@ -46,6 +47,23 @@ SUBSEC = {"entc": "1.A.1 - Energy Industries", "inen": "1.A.2 - Manufacturing an
           "agrc": "3.C - Agriculture (aggregate)", "soil": "3.C.4-6 - Managed Soils",
           "frst": "3.B - Forest Land", "lndu": "3.B - Land Use", "waso": "4.A - Solid Waste Disposal",
           "trww": "4.D - Wastewater", "wali": "4.D - Wastewater (water)", "ccsq": "5 - CCSQ"}
+# Spanish display labels for Tableau (sector_es / subsector_es columns).
+SECTOR_ES = {"1 - Energy": "1 - Energía", "2 - IPPU": "2 - IPPU", "3 - AFOLU": "3 - AFOLU",
+             "4 - Waste": "4 - Residuos", "5 - CCSQ": "5 - CCSQ"}
+SUBSEC_ES = {"1.A.1 - Energy Industries": "1.A.1 - Industrias de la energía",
+             "1.A.2 - Manufacturing and Construction": "1.A.2 - Manufactura y construcción",
+             "1.A.3 - Transport": "1.A.3 - Transporte",
+             "1.A.4 - Buildings and Other": "1.A.4 - Edificaciones y otros",
+             "1.A - Fuel Combustion": "1.A - Quema de combustibles",
+             "1.B - Fugitive Emissions": "1.B - Emisiones fugitivas", "2 - IPPU": "2 - IPPU",
+             "3.A.1 - Enteric Fermentation": "3.A.1 - Fermentación entérica",
+             "3.A.2 - Manure Management": "3.A.2 - Gestión de estiércol",
+             "3.C - Agriculture (aggregate)": "3.C - Agricultura (agregado)",
+             "3.C.4-6 - Managed Soils": "3.C.4-6 - Suelos gestionados",
+             "3.B - Forest Land": "3.B - Tierras forestales", "3.B - Land Use": "3.B - Uso de suelo",
+             "4.A - Solid Waste Disposal": "4.A - Disposición de residuos sólidos",
+             "4.D - Wastewater": "4.D - Aguas residuales",
+             "4.D - Wastewater (water)": "4.D - Aguas residuales (agua)", "5 - CCSQ": "5 - CCSQ"}
 GAS_LABEL = {"entc": "CO2", "enfu": "CO2", "fgtv": "CH4", "trde": "CO2", "wali": "CH4",
              "lndu": "CO2", "frst": "CO2", "ccsq": "CO2"}
 
@@ -85,6 +103,8 @@ def build(wide_path):
             rows.append({"subsector_ssp": s, "sector": SECTOR[s], "subsector": SUBSEC[s],
                          "gas": GAS_LABEL[s], "ID": f"{SUBSEC[s]}:{GAS_LABEL[s]}", "vars": tc})
     cw = pd.DataFrame(rows)
+    cw["sector_es"] = cw["sector"].map(SECTOR_ES)
+    cw["subsector_es"] = cw["subsector"].map(SUBSEC_ES)
 
     # verify exact reconciliation on the baseline, latest year available
     r = w[(w["primary_id"] == 0)].sort_values("time_period").iloc[len(w[w.primary_id == 0]) // 2]
@@ -104,7 +124,7 @@ def main():
     cw, cw_tot, auth = build(wide)
     os.makedirs(OUT_DIR, exist_ok=True)
     cw.to_csv(os.path.join(OUT_DIR, "crosswalk_cdmx_ssp.csv"), index=False)
-    cw.to_csv(os.path.join(OUT_DIR, "emission_targets_mex_2022.csv"), index=False)
+    cw.to_csv(os.path.join(OUT_DIR, "emission_targets_cdmx_2022.csv"), index=False)
     print(f"crosswalk_cdmx_ssp.csv written: {len(cw)} rows")
     print(f"reconciliation check: crosswalk={cw_tot:.5f}  authoritative={auth:.5f}  "
           f"diff={cw_tot - auth:+.6f}  {'OK EXACT' if abs(cw_tot - auth) < 1e-4 else 'FAIL'}")

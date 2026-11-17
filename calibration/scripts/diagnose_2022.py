@@ -8,8 +8,11 @@ per calibration/DECISIONS.md. Gates: total +-10%, each sector +-15% (or within
 import argparse
 import pandas as pd
 
-# Transport excludes maquinaria (0.370 Mt, construction off-road) -> Energy (inen).
-OBS = {"Transport": 17.432, "Energy": 5.607, "IPPU": 0.002, "Waste": 0.361, "AFOLU": 0.067}
+# Transport excludes maquinaria (0.370 Mt, construction off-road) -> Energy (inen)
+# and vehicle A/C HFC (77.3 t HFC = 0.1005 Mt, inside SEDEMA "Fuentes móviles") -> IPPU,
+# where SISEPUEDE models it (product_use_ods_refrigeration, IPCC 2.F.1).
+# IPPU = all SEDEMA Tabla 27 HFC: vehicle A/C 0.1005 + residential A/C 0.0018.
+OBS = {"Transport": 17.332, "Energy": 5.607, "IPPU": 0.102, "Waste": 0.361, "AFOLU": 0.067}
 
 
 def main():

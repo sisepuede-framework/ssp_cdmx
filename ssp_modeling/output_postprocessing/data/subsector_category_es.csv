@@ -1,0 +1,211 @@
+subsector_category,subsector_category_es
+agriculture_and_livestock,Agricultura y ganadería
+anaerobic_digester,Digestor anaerobio
+anaerobic_lagoon,Laguna anaerobia
+anaerobicdom_rice,Descomposición anaerobia en arroz
+aviation,Aviación
+biogas_food,Biogás: alimentos
+biogas_sludge,Biogás: lodos
+biogas_yard,Biogás: residuos de jardín
+biomass_bevs_and_spices,Biomasa: bebidas y especias
+biomass_burning,Quema de biomasa
+biomass_fruits,Biomasa: frutas
+biomass_nuts,Biomasa: nueces
+biomass_other_woody_perennial,Biomasa: otros perennes leñosos
+bmass_agriculture_and_livestock,Agricultura y ganadería (biomasa)
+bmass_cement,Cemento (biomasa)
+bmass_chemicals,Químicos (biomasa)
+bmass_commercial_municipal,Comercial y municipal (biomasa)
+bmass_electronics,Electrónica (biomasa)
+bmass_glass,Vidrio (biomasa)
+bmass_lime_and_carbonite,Cal y carbonatos (biomasa)
+bmass_metals,Metales (biomasa)
+bmass_mining,Minería (biomasa)
+bmass_other_product_manufacturing,Otras manufacturas (biomasa)
+bmass_other_se,Otros sectores (biomasa)
+bmass_paper,Papel (biomasa)
+bmass_plastic,Plásticos (biomasa)
+bmass_recycled_glass,Vidrio reciclado (biomasa)
+bmass_recycled_metals,Metales reciclados (biomasa)
+bmass_recycled_paper,Papel reciclado (biomasa)
+bmass_recycled_plastic,Plástico reciclado (biomasa)
+bmass_recycled_rubber_and_leather,Hule y cuero reciclados (biomasa)
+bmass_recycled_textiles,Textiles reciclados (biomasa)
+bmass_recycled_wood,Madera reciclada (biomasa)
+bmass_residential,Residencial (biomasa)
+bmass_rubber_and_leather,Hule y cuero (biomasa)
+bmass_textiles,Textiles (biomasa)
+bmass_wood,Madera (biomasa)
+cement,Cemento
+chemicals,Químicos
+commercial_municipal,Comercial y municipal
+compost_food,Compostaje: alimentos
+compost_sludge,Compostaje: lodos
+compost_yard,Compostaje: residuos de jardín
+composting,Compostaje
+crop_residues,Residuos de cultivos
+daily_spread,Esparcimiento diario
+deep_bedding,Cama profunda
+direct_anaerobic_digester,Digestor anaerobio (directas)
+direct_anaerobic_lagoon,Laguna anaerobia (directas)
+direct_composting,Compostaje (directas)
+direct_daily_spread,Esparcimiento diario (directas)
+direct_deep_bedding,Cama profunda (directas)
+direct_dry_lot,Corral seco (directas)
+direct_incineration,Incineración (directas)
+direct_liquid_slurry,Purín líquido (directas)
+direct_paddock_pasture_range,"Pastizal, pradera y corral (directas)"
+direct_poultry_manure,Estiércol avícola (directas)
+direct_storage_solid,Almacenamiento sólido (directas)
+dry_lot,Corral seco
+electronics,Electrónica
+emission_co2e_subsector_total_ccsq,Total: captura y secuestro de carbono
+emission_co2e_subsector_total_entc,Total: industrias de la energía
+emission_co2e_subsector_total_fgtv,Total: emisiones fugitivas
+emission_co2e_subsector_total_frst,Total: bosques
+emission_co2e_subsector_total_lndu,Total: uso de suelo
+entferm_buffalo,Fermentación entérica: búfalos
+entferm_cattle_dairy,Fermentación entérica: bovinos lecheros
+entferm_cattle_nondairy,Fermentación entérica: bovinos no lecheros
+entferm_chickens,Fermentación entérica: pollos
+entferm_goats,Fermentación entérica: cabras
+entferm_horses,Fermentación entérica: caballos
+entferm_mules,Fermentación entérica: mulas
+entferm_pigs,Fermentación entérica: cerdos
+entferm_sheep,Fermentación entérica: ovinos
+fertilizer,Fertilizantes
+glass,Vidrio
+human_powered,Tracción humana
+incineration,Incineración
+indirect_anaerobic_digester,Digestor anaerobio (indirectas)
+indirect_anaerobic_lagoon,Laguna anaerobia (indirectas)
+indirect_composting,Compostaje (indirectas)
+indirect_daily_spread,Esparcimiento diario (indirectas)
+indirect_deep_bedding,Cama profunda (indirectas)
+indirect_dry_lot,Corral seco (indirectas)
+indirect_incineration,Incineración (indirectas)
+indirect_liquid_slurry,Purín líquido (indirectas)
+indirect_paddock_pasture_range,"Pastizal, pradera y corral (indirectas)"
+indirect_poultry_manure,Estiércol avícola (indirectas)
+indirect_storage_solid,Almacenamiento sólido (indirectas)
+landfilled_chemical_industrial,Relleno sanitario: químicos industriales
+landfilled_food,Relleno sanitario: alimentos
+landfilled_glass,Relleno sanitario: vidrio
+landfilled_metal,Relleno sanitario: metales
+landfilled_nappies,Relleno sanitario: pañales
+landfilled_other,Relleno sanitario: otros
+landfilled_paper,Relleno sanitario: papel
+landfilled_plastic,Relleno sanitario: plásticos
+landfilled_rubber_leather,Relleno sanitario: hule y cuero
+landfilled_sludge,Relleno sanitario: lodos
+landfilled_textiles,Relleno sanitario: textiles
+landfilled_wood,Relleno sanitario: madera
+landfilled_yard,Relleno sanitario: residuos de jardín
+lime_and_carbonite,Cal y carbonatos
+lime_use,Uso de cal
+liquid_slurry,Purín líquido
+metals,Metales
+mineral_soils,Suelos minerales
+mining,Minería
+nbmass_agriculture_and_livestock,Agricultura y ganadería (no biomasa)
+nbmass_cement,Cemento (no biomasa)
+nbmass_chemicals,Químicos (no biomasa)
+nbmass_commercial_municipal,Comercial y municipal (no biomasa)
+nbmass_electronics,Electrónica (no biomasa)
+nbmass_glass,Vidrio (no biomasa)
+nbmass_lime_and_carbonite,Cal y carbonatos (no biomasa)
+nbmass_metals,Metales (no biomasa)
+nbmass_mining,Minería (no biomasa)
+nbmass_other_product_manufacturing,Otras manufacturas (no biomasa)
+nbmass_other_se,Otros sectores (no biomasa)
+nbmass_paper,Papel (no biomasa)
+nbmass_plastic,Plásticos (no biomasa)
+nbmass_recycled_glass,Vidrio reciclado (no biomasa)
+nbmass_recycled_metals,Metales reciclados (no biomasa)
+nbmass_recycled_paper,Papel reciclado (no biomasa)
+nbmass_recycled_plastic,Plástico reciclado (no biomasa)
+nbmass_recycled_rubber_and_leather,Hule y cuero reciclados (no biomasa)
+nbmass_recycled_textiles,Textiles reciclados (no biomasa)
+nbmass_recycled_wood,Madera reciclada (no biomasa)
+nbmass_residential,Residencial (no biomasa)
+nbmass_rubber_and_leather,Hule y cuero (no biomasa)
+nbmass_textiles,Textiles (no biomasa)
+nbmass_wood,Madera (no biomasa)
+open_dump_chemical_industrial,Tiradero a cielo abierto: químicos industriales
+open_dump_food,Tiradero a cielo abierto: alimentos
+open_dump_glass,Tiradero a cielo abierto: vidrio
+open_dump_metal,Tiradero a cielo abierto: metales
+open_dump_nappies,Tiradero a cielo abierto: pañales
+open_dump_other,Tiradero a cielo abierto: otros
+open_dump_paper,Tiradero a cielo abierto: papel
+open_dump_plastic,Tiradero a cielo abierto: plásticos
+open_dump_rubber_leather,Tiradero a cielo abierto: hule y cuero
+open_dump_sludge,Tiradero a cielo abierto: lodos
+open_dump_textiles,Tiradero a cielo abierto: textiles
+open_dump_wood,Tiradero a cielo abierto: madera
+open_dump_yard,Tiradero a cielo abierto: residuos de jardín
+organic_soils,Suelos orgánicos
+other_product_manufacturing,Otras manufacturas
+other_se,Otros sectores
+paddock_pasture_range,"Pastizal, pradera y corral"
+paper,Papel
+plastic,Plásticos
+poultry_manure,Estiércol avícola
+powered_bikes,Vehículos motorizados de dos ruedas
+product_use_product_use_lubricants,Uso de productos: lubricantes
+product_use_product_use_ods_other,"Uso de productos: SAO, otros usos"
+product_use_product_use_ods_refrigeration,"Uso de productos: SAO, refrigeración"
+product_use_product_use_other,Uso de productos: otros
+product_use_product_use_paraffin_wax,Uso de productos: ceras de parafina
+production_cement,Producción: cemento
+production_chemicals,Producción: químicos
+production_electronics,Producción: electrónica
+production_glass,Producción: vidrio
+production_lime_and_carbonite,Producción: cal y carbonatos
+production_metals,Producción: metales
+production_other_product_manufacturing,Producción: otras manufacturas
+production_paper,Producción: papel
+production_plastic,Producción: plásticos
+production_product_use_lubricants,Producción: lubricantes
+production_product_use_paraffin_wax,Producción: ceras de parafina
+public,Transporte público
+rail_freight,Ferrocarril de carga
+rail_passenger,Ferrocarril de pasajeros
+recycled_glass,Vidrio reciclado
+recycled_metals,Metales reciclados
+recycled_paper,Papel reciclado
+recycled_plastic,Plástico reciclado
+recycled_rubber_and_leather,Hule y cuero reciclados
+recycled_textiles,Textiles reciclados
+recycled_wood,Madera reciclada
+residential,Residencial
+road_heavy_freight,Carga pesada por carretera
+road_heavy_regional,Pasajeros regional por carretera
+road_light,Vehículos ligeros
+rubber_and_leather,Hule y cuero
+soc_mineral_soils,Carbono orgánico en suelos minerales
+storage_solid,Almacenamiento sólido
+textiles,Textiles
+treated_advanced_aerobic_effluent,Tratamiento aerobio avanzado (efluente)
+treated_advanced_aerobic_treatment,Tratamiento aerobio avanzado (tratamiento)
+treated_advanced_anaerobic_effluent,Tratamiento anaerobio avanzado (efluente)
+treated_advanced_anaerobic_treatment,Tratamiento anaerobio avanzado (tratamiento)
+treated_latrine_improved_effluent,Letrina mejorada (efluente)
+treated_latrine_improved_treatment,Letrina mejorada (tratamiento)
+treated_latrine_unimproved_effluent,Letrina no mejorada (efluente)
+treated_latrine_unimproved_treatment,Letrina no mejorada (tratamiento)
+treated_primary_effluent,Tratamiento primario (efluente)
+treated_primary_treatment,Tratamiento primario (tratamiento)
+treated_secondary_aerobic_effluent,Tratamiento aerobio secundario (efluente)
+treated_secondary_aerobic_treatment,Tratamiento aerobio secundario (tratamiento)
+treated_secondary_anaerobic_effluent,Tratamiento anaerobio secundario (efluente)
+treated_secondary_anaerobic_treatment,Tratamiento anaerobio secundario (tratamiento)
+treated_septic_effluent,Fosa séptica (efluente)
+treated_septic_treatment,Fosa séptica (tratamiento)
+untreated_no_sewerage_effluent,Sin tratamiento ni alcantarillado (efluente)
+untreated_no_sewerage_treatment,Sin tratamiento ni alcantarillado (tratamiento)
+untreated_with_sewerage_effluent,"Sin tratamiento, con alcantarillado (efluente)"
+untreated_with_sewerage_treatment,"Sin tratamiento, con alcantarillado (tratamiento)"
+urea_use,Uso de urea
+water_borne,Transporte acuático
+wood,Madera

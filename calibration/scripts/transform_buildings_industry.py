@@ -78,6 +78,17 @@ ELAST_FIX_COLS = [
     "elasticity_scoe_enerdem_per_mmmgdp_commercial_municipal_elec_appliances_to_gdppc",
 ]
 
+# Projection elasticities -> 0 after the 2022 benchmark. National trajectories ramp
+# to 1.0 by 2050: residential per-hh demand doubled with income (saturated urban LP
+# cooking/water heating) and commercial per-GDP intensity grew with GDP/cap on top of
+# GDP (double-counted growth, x4.8 by 2060). With 0, residential follows households
+# and commercial follows GDP. 2022 calibration untouched.
+ELAST_ZERO_AFTER = 2022
+ELAST_ZERO_COLS = ELAST_FIX_COLS + [
+    "elasticity_scoe_enerdem_per_hh_residential_heat_energy_to_gdppc",
+    "elasticity_scoe_enerdem_per_hh_residential_elec_appliances_to_gdppc",
+]
+
 # --- INEN calibration constants ----------------------------------------------
 INEN_AGRI_PJ = 0.163        # 5,767 tCO2e equipos agricolas / (0.4771 diesel x 74.1)
 INEN_OPM_TJ_MMM = 157.69    # tuned: OPM 3.428 Mt at 168.1 -> 3.216 target = SEDEMA
@@ -132,6 +143,11 @@ def transform(df, df_base):
     y = df["year"]
     for col in ELAST_FIX_COLS:
         df.loc[y < ELAST_FIX_YEAR, col] = df.loc[y == ELAST_FIX_YEAR, col].iloc[0]
+        changed.append(col)
+
+    # --- SCOE projection elasticities: 0 after benchmark (no income-driven growth)
+    for col in ELAST_ZERO_COLS:
+        df.loc[y > ELAST_ZERO_AFTER, col] = 0.0
         changed.append(col)
 
     # --- SCOE consumption intensities (rescaled trajectories)
@@ -240,6 +256,11 @@ def main():
         rows.append(row(col, float(df.loc[df["year"] == ELAST_FIX_YEAR, col].iloc[0]),
                         "pre-2020 values held at 2020 value: national +13.07 (2019) x "
                         "COVID GDP/cap drop flipped commercial demand negative", SRC_INV))
+    for col in ELAST_ZERO_COLS:
+        rows.append(row(col, 0.0,
+                        "set 0 after 2022: national ramp to 1.0 doubled per-hh demand and "
+                        "double-counted commercial growth; res follows households, com follows GDP",
+                        SRC_INV))
     for f in INEN_FUELS:
         col = f"frac_inen_energy_other_product_manufacturing_{f}"
         rows.append(row(col, FRAC_OPM.get(f, 0.0),
@@ -257,7 +278,7 @@ def main():
     n = len(set(changed))
     print(f"buildings-industry transform applied. Columns set: {n}")
     print("Targets 2022: SCOE res 1.716 + com 0.560; INEN 3.225 (incl. agri, maquinaria).")
-    print("Kept national: efficfactor/scalar scoe, elasticities except commercial pre-2020, per-tonne inen "
+    print("Kept national: efficfactor/scalar scoe, pre-2022 elasticities (except commercial pre-2020), per-tonne inen "
           "intensities, scalar_inen_*, textiles/wood frac groups, other_se, "
           "prodinit_ippu_* (ippu-agent).")
 

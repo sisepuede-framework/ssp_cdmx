@@ -80,15 +80,31 @@ See `04_validation/convergence_log.csv`.
 
 ## 4. Known limitations / documented exceptions
 
+- **Waste re-specified 2026-11-16 (now 0.395 vs 0.361, +9% ✅; total 23.649, +0.8%):**
+  the +144% below came from industrial-wastewater N (GDP-driven, ~78% of model N; SEDEMA
+  has no industrial wastewater category) plus an untreated-sewer N2O double count
+  (0.012 in sewer + 0.012 on effluent). Industrial N/COD → ~0, sewer N2O EF 0, effluent EF
+  0.005 (IPCC), domestic BOD 0.006 → 0.018 kg/cap/d. TRWW 0.312 vs 0.309 Mt (CH4 0.266 vs
+  0.262, N2O 0.046 vs 0.047); 2060 0.34 Mt instead of 1.69. See
+  `01_cdmx_data/cdmx_waste_afolu_notes.md` §3c. Superseded text:
 - **Waste +144% (0.88 vs 0.36 Mt):** reduced 14× from the national-scaled 12.5 Mt
   via documented territorial export (solid waste → Edomex; wastewater → Tula).
   The residual is an irreducible methodological difference — SISEPUEDE's
   IPCC-default wastewater COD/BOD/N accounting exceeds SEDEMA's territorial
   inventory even after export scaling. Not force-patched further (per project
   ground rules). Absolute excess 0.52 Mt = 2.2% of the total benchmark.
-- **IPPU 0.26 vs 0.002:** SISEPUEDE attributes CDMX's 15%-GDP share of national
-  HFC/refrigerant product-use (banks); SEDEMA Scope-1 counts only AC-maintenance.
-  Scaled down (demscalar 0.01) but a residual remains — documented scope difference.
+- **IPPU re-benchmarked 2026-11-16 (target 0.002 → 0.102 Mt; Transport 17.802 → 17.701):**
+  checked against the PDF, Tabla 27 has HFC in Fuentes móviles (vehicle A/C, 77.3 t
+  HFC ≈ 0.1005 Mt) besides residential A/C (0.0018 Mt). SISEPUEDE models mobile A/C in
+  IPPU (2.F.1), so it moved from the transport target to IPPU. The old 0.26 Mt residual
+  came from sources that bypass `prodinit` and are NOT in SEDEMA: OPM N2O/SF6 per mmm
+  GDP (0.108 Mt, IPCC 2.G; no N2O product-use category, no SF6 column), national
+  clinker exports copied unscaled into `net_imports_cement_clinker_tonne` (−174,431 t →
+  0.091 Mt; no kilns in CDMX). Now: those EFs and clinker net imports = 0, `ods_other`
+  = 0, `ods_refrigeration` demscalar 0.05611 → 102,529 t. IPPU 2022 = 102,853 t
+  (+ ~330 t lubricants/wax/other). SISEPUEDE's `emission_co2e_subsector_total_ippu`
+  adds the `hfcs_*`/`pfcs_*`/`other_fcs_*` aggregates on top of the individual gases
+  (reports 205 kt); `run_baseline.py` and the Tableau postprocessing recompute without them.
 - **AFOLU −36%:** SEDEMA includes forest fires (0.0175 Mt) that the model's
   land-use configuration does not; livestock/crop sources match.
 - **FRST sink** (model −0.11 Mt) excluded from the gross comparison, matching
